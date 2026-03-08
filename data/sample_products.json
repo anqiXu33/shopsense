@@ -1,0 +1,561 @@
+[
+  {
+    "id": "P001",
+    "name": "Alpine Duck Down Jacket",
+    "category": "outerwear",
+    "price": 129.99,
+    "brand": "NorthPeak",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Adidas_Helionic_Down_Jacket.jpg/1920px-Adidas_Helionic_Down_Jacket.jpg",
+    "description": "Duck down fill 450g, deep navy blue color, wind-resistant matte shell, removable hood with adjustable drawstring, two zip side pockets and one inner chest pocket, ribbed cuffs, slightly fitted silhouette, logo patch on left chest",
+    "sizing": {
+      "XS": "150-158cm/40-48kg",
+      "S": "158-163cm/48-55kg",
+      "M": "163-170cm/55-65kg",
+      "L": "170-176cm/65-75kg",
+      "XL": "176-182cm/75-85kg"
+    },
+    "reviews": [
+      {
+        "text": "Really warm, wore it at -8 degrees in Hokkaido and stayed comfortable all day.",
+        "rating": 5,
+        "reviewer_height": 168
+      },
+      {
+        "text": "The color is a rich deep navy, looks more blue than black in daylight.",
+        "rating": 4,
+        "reviewer_height": 172
+      },
+      {
+        "text": "Runs slightly small. I am 170cm and usually wear M but had to size up to L.",
+        "rating": 3,
+        "reviewer_height": 170
+      },
+      {
+        "text": "Not warm enough for -15 degrees northeastern winter. Fine for -5 to -10 maybe.",
+        "rating": 3,
+        "reviewer_height": 175
+      },
+      {
+        "text": "The outer shell feels smooth, not crinkly like cheap down jackets. Looks premium.",
+        "rating": 5,
+        "reviewer_height": 163
+      },
+      {
+        "text": "Filling is uneven around the shoulders. One side feels puffier than the other.",
+        "rating": 2,
+        "reviewer_height": 166
+      }
+    ]
+  },
+  {
+    "id": "P002",
+    "name": "Waterproof Trench Coat",
+    "category": "outerwear",
+    "price": 189.99,
+    "brand": "UrbanShell",
+    "image_url": "placeholder",
+    "description": "100% polyester with waterproof membrane, classic khaki beige color, double-breasted button front, belted waist, storm flap at shoulders, knee length, removable wool-blend inner lining, structured collar",
+    "sizing": {
+      "S": "158-163cm",
+      "M": "163-170cm",
+      "L": "170-176cm",
+      "XL": "176-182cm"
+    },
+    "reviews": [
+      {
+        "text": "Kept me completely dry in heavy rain for 40 minutes. Genuinely waterproof.",
+        "rating": 5,
+        "reviewer_height": 165
+      },
+      {
+        "text": "The khaki is a warm tan color, not yellow-toned. Very classic and elegant looking.",
+        "rating": 5,
+        "reviewer_height": 169
+      },
+      {
+        "text": "Buttons feel cheap and one came loose after two weeks of wear.",
+        "rating": 2,
+        "reviewer_height": 170
+      },
+      {
+        "text": "Perfect for autumn office wear. Smart enough for meetings, comfortable for commute.",
+        "rating": 5,
+        "reviewer_height": 162
+      },
+      {
+        "text": "I am 168cm and the M hits just above the knee. Good length for my height.",
+        "rating": 4,
+        "reviewer_height": 168
+      },
+      {
+        "text": "The inner lining makes it warm down to about 5 degrees. Below that you need extra layers.",
+        "rating": 4,
+        "reviewer_height": 171
+      }
+    ]
+  },
+  {
+    "id": "P003",
+    "name": "Fleece Zip-Up Hoodie",
+    "category": "outerwear",
+    "price": 59.99,
+    "brand": "TrailWarm",
+    "image_url": "placeholder",
+    "description": "300gsm anti-pill fleece, heather grey color with subtle texture, full-length metal zip, kangaroo front pocket, fitted hood without drawstring, relaxed fit, soft brushed interior lining, raglan sleeves",
+    "sizing": {
+      "S": "158-165cm/45-58kg",
+      "M": "165-172cm/58-68kg",
+      "L": "172-178cm/68-78kg",
+      "XL": "178-185cm/78-90kg"
+    },
+    "reviews": [
+      {
+        "text": "Softest fleece I have ever worn. My eczema-prone arms have no reaction at all.",
+        "rating": 5,
+        "reviewer_height": 160
+      },
+      {
+        "text": "The grey is a medium heather, not too dark or too light. Very versatile.",
+        "rating": 4,
+        "reviewer_height": 167
+      },
+      {
+        "text": "Good for 5 to 15 degrees. Too warm for indoors in heated buildings.",
+        "rating": 4,
+        "reviewer_height": 173
+      },
+      {
+        "text": "Pilling appeared after 6 washes even on gentle cycle. Disappointing.",
+        "rating": 2,
+        "reviewer_height": 169
+      },
+      {
+        "text": "Runs true to size. I am 165cm 60kg and the M fits perfectly without being baggy.",
+        "rating": 5,
+        "reviewer_height": 165
+      },
+      {
+        "text": "Great for hiking layering. Wore under a shell jacket at 0 degrees and stayed warm.",
+        "rating": 5,
+        "reviewer_height": 176
+      }
+    ]
+  },
+  {
+    "id": "P004",
+    "name": "Cashmere Turtleneck Sweater",
+    "category": "knitwear",
+    "price": 159.99,
+    "brand": "SoftLux",
+    "image_url": "placeholder",
+    "description": "100% Grade A Mongolian cashmere, warm camel beige color, fitted turtleneck collar approximately 8cm tall, fine 12-gauge knit, slim fitted silhouette, ribbed hem and cuffs, lightweight despite warmth",
+    "sizing": {
+      "S": "155-163cm/45-55kg",
+      "M": "163-170cm/55-65kg",
+      "L": "170-178cm/65-75kg"
+    },
+    "reviews": [
+      {
+        "text": "I have rosacea and the collar does not irritate my neck even after hours of wear.",
+        "rating": 5,
+        "reviewer_height": 162
+      },
+      {
+        "text": "The camel color is a warm honey-beige tone, slightly more orange than the photo.",
+        "rating": 4,
+        "reviewer_height": 165
+      },
+      {
+        "text": "Runs slim. I normally wear M but needed L to feel comfortable around the shoulders.",
+        "rating": 3,
+        "reviewer_height": 170
+      },
+      {
+        "text": "Warm enough for 0 to 8 degrees indoors. Would need layering outside below that.",
+        "rating": 4,
+        "reviewer_height": 158
+      },
+      {
+        "text": "Pilling started after 3 washes despite hand washing in cold water.",
+        "rating": 2,
+        "reviewer_height": 168
+      },
+      {
+        "text": "Incredibly soft. My skin is very sensitive and this is the only wool garment I can wear.",
+        "rating": 5,
+        "reviewer_height": 155
+      }
+    ]
+  },
+  {
+    "id": "P005",
+    "name": "Merino Wool Crew Sweater",
+    "category": "knitwear",
+    "price": 89.99,
+    "brand": "WoolCraft",
+    "image_url": "placeholder",
+    "description": "100% extra-fine merino wool, oatmeal cream color, classic crew neck, relaxed fit, 7-gauge mid-weight knit, ribbed collar and cuffs, single-needle stitching detail at shoulder seam",
+    "sizing": {
+      "S": "158-165cm",
+      "M": "165-172cm",
+      "L": "172-178cm",
+      "XL": "178-185cm"
+    },
+    "reviews": [
+      {
+        "text": "Beautiful oatmeal color, slightly cream-toned rather than pure white. Very classic.",
+        "rating": 5,
+        "reviewer_height": 169
+      },
+      {
+        "text": "Shrunk noticeably after first wash. Must use cold water and lay flat to dry.",
+        "rating": 2,
+        "reviewer_height": 171
+      },
+      {
+        "text": "True to size. I am 167cm and the M fits perfectly, not too tight or boxy.",
+        "rating": 5,
+        "reviewer_height": 167
+      },
+      {
+        "text": "Much softer than regular wool. No scratching even against my bare neck.",
+        "rating": 5,
+        "reviewer_height": 163
+      },
+      {
+        "text": "Pilling on the underarms after two months of regular wear.",
+        "rating": 3,
+        "reviewer_height": 174
+      },
+      {
+        "text": "Perfect weight for autumn office wear. Not too hot under a blazer.",
+        "rating": 4,
+        "reviewer_height": 166
+      }
+    ]
+  },
+  {
+    "id": "P006",
+    "name": "Oversized Cotton Sweatshirt",
+    "category": "knitwear",
+    "price": 45.99,
+    "brand": "Everyday",
+    "image_url": "placeholder",
+    "description": "380gsm heavyweight cotton fleece, washed sage green color with slight vintage fade effect, dropped shoulder seams, boxy oversized fit, ribbed crew neck cuffs and hem, small embroidered logo at left chest, brushed interior for softness",
+    "sizing": {
+      "S": "oversized fit, suits 155-165cm",
+      "M": "oversized fit, suits 165-172cm",
+      "L": "oversized fit, suits 172-180cm"
+    },
+    "reviews": [
+      {
+        "text": "The sage green is a muted earthy tone, not bright. More of a dusty green-grey.",
+        "rating": 5,
+        "reviewer_height": 161
+      },
+      {
+        "text": "Very gentle on skin. I have contact dermatitis and 100% cotton is the only thing I can wear.",
+        "rating": 5,
+        "reviewer_height": 158
+      },
+      {
+        "text": "Heavy and warm for a sweatshirt. Fine for 10 to 18 degrees indoors.",
+        "rating": 4,
+        "reviewer_height": 169
+      },
+      {
+        "text": "Oversized as advertised. I am 163cm and the S gives a relaxed slouchy look.",
+        "rating": 4,
+        "reviewer_height": 163
+      },
+      {
+        "text": "Color faded significantly after 5 washes. Looks worn out now.",
+        "rating": 2,
+        "reviewer_height": 172
+      },
+      {
+        "text": "Perfect for casual days. Great for errands and working from home.",
+        "rating": 5,
+        "reviewer_height": 165
+      }
+    ]
+  },
+  {
+    "id": "P007",
+    "name": "Thermal Base Layer Set",
+    "category": "knitwear",
+    "price": 49.99,
+    "brand": "CoreWarm",
+    "image_url": "placeholder",
+    "description": "95% polyester 5% spandex thermal knit, charcoal grey, long sleeve top and full-length leggings set, brushed fleece inner surface, moisture-wicking outer layer, flatlock seams to prevent chafing, stretchy form-fitting silhouette",
+    "sizing": {
+      "S": "155-163cm/45-55kg",
+      "M": "163-170cm/55-65kg",
+      "L": "170-178cm/65-75kg"
+    },
+    "reviews": [
+      {
+        "text": "Keeps me warm skiing at -15 degrees when worn under ski pants and jacket.",
+        "rating": 5,
+        "reviewer_height": 167
+      },
+      {
+        "text": "The charcoal grey is a dark neutral. Invisible under clothes as a base layer.",
+        "rating": 4,
+        "reviewer_height": 170
+      },
+      {
+        "text": "Flatlock seams make a difference. No rubbing at all even on my sensitive skin.",
+        "rating": 5,
+        "reviewer_height": 162
+      },
+      {
+        "text": "Slightly itchy for the first few wears but softened after washing.",
+        "rating": 3,
+        "reviewer_height": 168
+      },
+      {
+        "text": "Runs true to size. Form-fitting but not uncomfortably tight.",
+        "rating": 4,
+        "reviewer_height": 165
+      },
+      {
+        "text": "Moisture wicking works well during winter runs. Stays dry even when sweating.",
+        "rating": 5,
+        "reviewer_height": 172
+      }
+    ]
+  },
+  {
+    "id": "P008",
+    "name": "Memory Foam House Slipper",
+    "category": "footwear",
+    "price": 34.99,
+    "brand": "CozyStep",
+    "image_url": "placeholder",
+    "description": "Memory foam insole 3cm thick, sherpa wool-like upper lining, dark grey microsuede outer shell, anti-slip rubber sole with textured grip pattern, open back mule style, reinforced toe box, approximately 4cm platform height",
+    "sizing": {
+      "S": "EU 35-36",
+      "M": "EU 37-38",
+      "L": "EU 39-40",
+      "XL": "EU 41-42"
+    },
+    "reviews": [
+      {
+        "text": "The sherpa lining is incredibly soft and fluffy, like walking on clouds.",
+        "rating": 5,
+        "reviewer_height": 160
+      },
+      {
+        "text": "Anti-slip sole genuinely works on tile and wood floors. Safe for my elderly mother.",
+        "rating": 5,
+        "reviewer_height": 165
+      },
+      {
+        "text": "Runs wide. I have narrow feet and the M feels loose and tends to slip off.",
+        "rating": 3,
+        "reviewer_height": 158
+      },
+      {
+        "text": "Dark grey color is accurate to the photo. Looks clean and minimal.",
+        "rating": 4,
+        "reviewer_height": 170
+      },
+      {
+        "text": "Memory foam flattened completely after 3 weeks of daily use. Lost all cushioning.",
+        "rating": 2,
+        "reviewer_height": 168
+      },
+      {
+        "text": "Perfect for cold mornings at home. Warm enough without socks underneath.",
+        "rating": 5,
+        "reviewer_height": 162
+      }
+    ]
+  },
+  {
+    "id": "P009",
+    "name": "Leather Chelsea Boot",
+    "category": "footwear",
+    "price": 145.00,
+    "brand": "StepCraft",
+    "image_url": "placeholder",
+    "description": "Full-grain leather upper, chestnut brown color with slight burnished effect at toe, elastic side gussets in black, low block heel approximately 3cm, pull tab at back, smooth leather lining, rubber lugged outsole for grip",
+    "sizing": {
+      "EU 36": "fits standard EU 36",
+      "EU 37": "fits standard EU 37",
+      "EU 38": "fits standard EU 38",
+      "EU 39": "fits standard EU 39",
+      "EU 40": "fits standard EU 40"
+    },
+    "reviews": [
+      {
+        "text": "The chestnut brown is a rich warm tone with slight variation at the toe cap. Beautiful.",
+        "rating": 5,
+        "reviewer_height": 167
+      },
+      {
+        "text": "Runs half a size small. I normally wear EU 38 but needed 39 for comfort.",
+        "rating": 3,
+        "reviewer_height": 163
+      },
+      {
+        "text": "Leather is stiff at first but softened significantly after one week of wear.",
+        "rating": 4,
+        "reviewer_height": 169
+      },
+      {
+        "text": "Smart enough for office presentations, casual enough for weekend brunch. Very versatile.",
+        "rating": 5,
+        "reviewer_height": 165
+      },
+      {
+        "text": "Not waterproof. Got soaked in rain within minutes. Treat with waterproof spray first.",
+        "rating": 2,
+        "reviewer_height": 171
+      },
+      {
+        "text": "The heel height is modest. Easy to walk in all day without foot pain.",
+        "rating": 5,
+        "reviewer_height": 160
+      }
+    ]
+  },
+  {
+    "id": "P010",
+    "name": "Merino Wool Ankle Socks",
+    "category": "footwear",
+    "price": 18.99,
+    "brand": "WoolCraft",
+    "image_url": "placeholder",
+    "description": "80% merino wool 20% nylon, heather blue color with subtle marled texture, ankle height with ribbed cuff, reinforced heel and toe, flat toe seam, medium cushioning on sole, breathable open weave on foot arch",
+    "sizing": {
+      "S": "EU 35-37",
+      "M": "EU 38-40",
+      "L": "EU 41-43"
+    },
+    "reviews": [
+      {
+        "text": "No foot odor even after a full day of walking. Merino wool is incredible for this.",
+        "rating": 5,
+        "reviewer_height": 168
+      },
+      {
+        "text": "The heather blue is a soft medium blue with grey undertones. Subtle and nice.",
+        "rating": 4,
+        "reviewer_height": 163
+      },
+      {
+        "text": "My daughter has a wool allergy but tolerates these fine. Must be the fine grade merino.",
+        "rating": 5,
+        "reviewer_height": 158
+      },
+      {
+        "text": "Warm enough for autumn but not bulky in shoes. Perfect transitional season sock.",
+        "rating": 4,
+        "reviewer_height": 172
+      },
+      {
+        "text": "Hole appeared at the heel after 2 months of regular wear.",
+        "rating": 2,
+        "reviewer_height": 169
+      },
+      {
+        "text": "Flat toe seam makes a big difference. No irritation on my bunion-prone toes.",
+        "rating": 5,
+        "reviewer_height": 161
+      }
+    ]
+  },
+  {
+    "id": "P011",
+    "name": "Goose Down Sleeping Bag",
+    "category": "outerwear",
+    "price": 219.99,
+    "brand": "CampCore",
+    "image_url": "placeholder",
+    "description": "700-fill goose down, forest green outer shell in ripstop nylon, mummy shape with contoured hood, full-length YKK zip with anti-snag guard, internal zip pocket, compression stuff sack included, rated comfort temperature -5 degrees celsius",
+    "sizing": {
+      "Regular": "fits up to 183cm",
+      "Long": "fits up to 198cm"
+    },
+    "reviews": [
+      {
+        "text": "Used at -8 degrees camping and slept comfortably with just a thermal base layer.",
+        "rating": 5,
+        "reviewer_height": 175
+      },
+      {
+        "text": "The forest green is a deep rich color, not bright. Looks great in nature photos.",
+        "rating": 4,
+        "reviewer_height": 168
+      },
+      {
+        "text": "Rated to -5 degrees but I found it chilly at -3. Maybe I sleep cold.",
+        "rating": 3,
+        "reviewer_height": 180
+      },
+      {
+        "text": "Compresses to surprisingly small size. Fits easily in my 45L hiking backpack.",
+        "rating": 5,
+        "reviewer_height": 170
+      },
+      {
+        "text": "The hood cinches snugly around the face. Critical for keeping head warm on cold nights.",
+        "rating": 5,
+        "reviewer_height": 165
+      },
+      {
+        "text": "Down shifts and creates cold spots after a few uses. Needs shaking out regularly.",
+        "rating": 3,
+        "reviewer_height": 173
+      }
+    ]
+  },
+  {
+    "id": "P012",
+    "name": "Bamboo Pajama Set",
+    "category": "knitwear",
+    "price": 55.00,
+    "brand": "SleepSoft",
+    "image_url": "placeholder",
+    "description": "95% bamboo viscose 5% spandex, dusty rose pink color, long sleeve button-down top with chest pocket and matching full-length trousers with elastic waistband and two side pockets, satin-smooth surface texture, lightweight and breathable",
+    "sizing": {
+      "S": "155-163cm/45-55kg",
+      "M": "163-170cm/55-65kg",
+      "L": "170-178cm/65-75kg"
+    },
+    "reviews": [
+      {
+        "text": "The softest pajamas I have owned. Bamboo fabric feels like cool silk against my skin.",
+        "rating": 5,
+        "reviewer_height": 163
+      },
+      {
+        "text": "Perfect for people with eczema. Completely non-irritating and breathable all night.",
+        "rating": 5,
+        "reviewer_height": 158
+      },
+      {
+        "text": "The dusty rose is a muted soft pink, more grey-toned than bright. Very subtle.",
+        "rating": 5,
+        "reviewer_height": 166
+      },
+      {
+        "text": "Too cool for winter without heating. Best for spring, autumn or air-conditioned rooms.",
+        "rating": 3,
+        "reviewer_height": 169
+      },
+      {
+        "text": "Runs slightly large. I am 163cm 55kg and the S fits with a little room to spare.",
+        "rating": 4,
+        "reviewer_height": 163
+      },
+      {
+        "text": "Wrinkles easily. Needs a quick steam after washing to look neat.",
+        "rating": 3,
+        "reviewer_height": 170
+      }
+    ]
+  }
+]
