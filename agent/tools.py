@@ -10,22 +10,20 @@ Four tools the Agent can call:
 import requests
 from qdrant_client import QdrantClient
 from qdrant_client.models import Filter, FieldCondition, MatchValue
-from sentence_transformers import SentenceTransformer
-from huggingface_hub import InferenceClient
 
 from config.settings import (
     QDRANT_URL,
     QDRANT_API_KEY,
     COLLECTIONS,
-    HF_API_KEY,
-    QWEN_MODEL,
+    DASHSCOPE_API_KEY,
+    DASHSCOPE_BASE_URL,
+    VISION_MODEL,
     EMBED_MODEL,
     TOP_K,
 )
 
 # Singletons — initialised once and reused
 _qdrant = None
-_embedder = None
 
 
 def get_qdrant():
@@ -35,11 +33,22 @@ def get_qdrant():
     return _qdrant
 
 
-def get_embedder():
-    global _embedder
-    if _embedder is None:
-        _embedder = SentenceTransformer(EMBED_MODEL)
-    return _embedder
+def embed_text(text: str) -> list[float]:
+    response = requests.post(
+        f"{DASHSCOPE_BASE_URL}/embeddings",
+        headers={
+            "Authorization": f"Bearer {DASHSCOPE_API_KEY}",
+            "Content-Type": "application/json",
+        },
+        json={
+            "model": EMBED_MODEL,
+            "input": text,
+        },
+        timeout=60,
+    )
+    response.raise_for_status()
+    data = response.json()
+    return data["data"][0]["embedding"]
 
 
 # ── Tool 1: Visual Analysis ───────────────────────────────────────────────────
@@ -61,24 +70,31 @@ def visual_analysis(image_url: str, question: str = None) -> dict:
         }
 
     try:
-        client = InferenceClient(
-            api_key=HF_API_KEY,
+        response = requests.post(
+            f"{DASHSCOPE_BASE_URL}/chat/completions",
+            headers={
+                "Authorization": f"Bearer {DASHSCOPE_API_KEY}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": VISION_MODEL,
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "image_url", "image_url": {"url": image_url}},
+                            {"type": "text", "text": prompt},
+                        ],
+                    }
+                ],
+                "max_tokens": 300,
+            },
+            timeout=60,
         )
-        response = client.chat.completions.create(
-            model="meta-llama/Llama-3.2-11B-Vision-Instruct",
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "image_url", "image_url": {"url": image_url}},
-                        {"type": "text", "text": prompt},
-                    ],
-                }
-            ],
-            max_tokens=300,
-        )
-        description = response.choices[0].message.content.strip()
-        return {"description": description, "source": "llama-vision"}
+        response.raise_for_status()
+        data = response.json()
+        description = data["choices"][0]["message"]["content"].strip()
+        return {"description": description, "source": "qwen-vision"}
 
     except Exception as e:
         print(f"[visual_analysis] API call failed: {e}. Using placeholder.")
@@ -98,8 +114,7 @@ def search_knowledge(query: str, top_k: int = TOP_K) -> list[dict]:
 
     Returns list of dicts with 'text' and 'score'.
     """
-    embedder = get_embedder()
-    vector = embedder.encode(query).tolist()
+    vector = embed_text(query)
 
     results = (
         get_qdrant()
@@ -138,8 +153,7 @@ def search_reviews(
     Semantic search over reviews_chunks, filtered to a specific product.
     Optional filters: sentiment, reviewer height range.
     """
-    embedder = get_embedder()
-    vector = embedder.encode(query).tolist()
+    vector = embed_text(query)
 
     # Build Qdrant filter
     conditions = [FieldCondition(key="product_id", match=MatchValue(value=product_id))]
@@ -194,11 +208,10 @@ def search_sizing(
     Search sizing guide for a specific product.
     If height/weight provided, query with those as context.
     """
-    embedder = get_embedder()
     query = (
         f"size for height {height}cm weight {weight}kg" if height else "sizing guide"
     )
-    vector = embedder.encode(query).tolist()
+    vector = embed_text(query)
 
     query_filter = Filter(
         must=[FieldCondition(key="product_id", match=MatchValue(value=product_id))]

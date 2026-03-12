@@ -1,11 +1,12 @@
+from __future__ import annotations
 """
 agent/agent.py
 Main agent loop. Ties everything together:
   intent → plan → execute tools → assemble context → generate answer
 """
 
-from huggingface_hub import InferenceClient
-from config.settings import HF_API_KEY, QWEN_MODEL
+import requests
+from config.settings import DASHSCOPE_API_KEY, DASHSCOPE_BASE_URL, TEXT_MODEL
 from agent.intent import classify_intent
 from agent.planner import get_plan, execute_plan
 from agent.context_engineer import assemble_context
@@ -66,17 +67,23 @@ def generate_answer(prompt: str, intent_result: "dict | None" = None) -> str:
     if intent_result is None:
         intent_result = {}
     try:
-        client = InferenceClient(
-            provider="sambanova",
-            api_key=HF_API_KEY,
+        response = requests.post(
+            f"{DASHSCOPE_BASE_URL}/chat/completions",
+            headers={
+                "Authorization": f"Bearer {DASHSCOPE_API_KEY}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": TEXT_MODEL,
+                "messages": [{"role": "user", "content": prompt}],
+                "max_tokens": 200,
+                "temperature": 0.3,
+            },
+            timeout=(10, 180),
         )
-        response = client.chat.completions.create(
-            model="meta-llama/Llama-3.3-70B-Instruct",
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=200,
-            temperature=0.3,
-        )
-        return response.choices[0].message.content.strip()
+        response.raise_for_status()
+        data = response.json()
+        return data["choices"][0]["message"]["content"].strip()
     except Exception as e:
         print(f"[Agent] LLM call failed: {e}. Using mock answer.")
-        return "[Demo mode] Set HF_API_KEY in config/settings.py to enable real answers."
+        return "[Demo mode] Set DASHSCOPE_API_KEY in .env to enable real answers."

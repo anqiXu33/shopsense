@@ -15,15 +15,38 @@ from qdrant_client import QdrantClient
 from qdrant_client.models import (
     Distance, VectorParams, PointStruct, PayloadSchemaType
 )
-from sentence_transformers import SentenceTransformer
+import requests
 from tqdm import tqdm
 from config.settings import (
-    QDRANT_URL, QDRANT_API_KEY, COLLECTIONS, VECTOR_SIZE, EMBED_MODEL
+    QDRANT_URL,
+    QDRANT_API_KEY,
+    COLLECTIONS,
+    VECTOR_SIZE,
+    EMBED_MODEL,
+    DASHSCOPE_BASE_URL,
+    DASHSCOPE_API_KEY,
 )
 
 # ── Setup ────────────────────────────────────────────────────────────────────
 client = QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY)
-embedder = SentenceTransformer(EMBED_MODEL)
+
+
+def embed_text(text: str) -> list[float]:
+    response = requests.post(
+        f"{DASHSCOPE_BASE_URL}/embeddings",
+        headers={
+            "Authorization": f"Bearer {DASHSCOPE_API_KEY}",
+            "Content-Type": "application/json",
+        },
+        json={
+            "model": EMBED_MODEL,
+            "input": text,
+        },
+        timeout=60,
+    )
+    response.raise_for_status()
+    data = response.json()
+    return data["data"][0]["embedding"]
 
 MATERIAL_KNOWLEDGE = [
     {
@@ -114,7 +137,7 @@ def ingest_products(products):
         visual_text = f"{product['name']}: {product['description']}"
         visual_points.append(PointStruct(
             id=hash(product['id']) % (2**31),  # Qdrant needs int or UUID
-            vector=embedder.encode(visual_text).tolist(),
+            vector=embed_text(visual_text),
             payload={
                 "product_id": product['id'],
                 "name": product['name'],
@@ -130,7 +153,7 @@ def ingest_products(products):
         for review in product.get('reviews', []):
             review_points.append(PointStruct(
                 id=review_id,
-                vector=embedder.encode(review['text']).tolist(),
+                vector=embed_text(review['text']),
                 payload={
                     "product_id": product['id'],
                     "text": review['text'],
@@ -157,7 +180,7 @@ def ingest_knowledge():
         text = f"{item['material']}: {item['properties']} {item['skin_notes']} Warmth: {item['warmth_range']}"
         points.append(PointStruct(
             id=i,
-            vector=embedder.encode(text).tolist(),
+            vector=embed_text(text),
             payload=item
         ))
     client.upsert(collection_name=COLLECTIONS["knowledge"], points=points)
@@ -175,7 +198,7 @@ def ingest_sizing(products):
             text = f"{product['brand']} {product['name']} size {size_label}: fits {size_range}"
             points.append(PointStruct(
                 id=point_id,
-                vector=embedder.encode(text).tolist(),
+                vector=embed_text(text),
                 payload={
                     "product_id": product['id'],
                     "brand": product['brand'],

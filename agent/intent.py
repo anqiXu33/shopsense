@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 agent/intent.py
 Classifies user query into intent + extracts entities.
