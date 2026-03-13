@@ -39,7 +39,63 @@ shopsense/
 
 ---
 
-## Quickstart
+## Quickstart (React + FastAPI)
+
+### 1. 配置 API Keys
+
+创建 `.env` 文件（参考 `config/settings.py`）：
+```
+DASHSCOPE_API_KEY=your_key_here
+QDRANT_URL=http://127.0.0.1:6333
+```
+
+### 2. 启动 Qdrant
+
+```bash
+docker run -p 6333:6333 qdrant/qdrant
+```
+
+### 3. 导入数据（首次运行）
+
+```bash
+pip install -r requirements.txt
+python scripts/ingest_v2.py
+```
+
+### 4. 启动后端
+
+```bash
+cd backend
+pip install fastapi uvicorn
+uvicorn main:app --reload --port 8000
+```
+
+### 5. 启动前端
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+访问 http://localhost:5173
+
+---
+
+### 快速体验（Mock 模式，无需 API Key）
+
+仅启动后端和前端即可体验 UI（回答为模拟数据）：
+```bash
+# 终端 1
+cd backend && uvicorn main:app --reload --port 8000
+
+# 终端 2
+cd frontend && npm install && npm run dev
+```
+
+---
+
+## Quickstart (Legacy Gradio)
 
 ```bash
 # 1. Install dependencies
