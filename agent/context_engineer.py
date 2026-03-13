@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 agent/context_engineer.py
 Assembles the final LLM prompt from tool results.

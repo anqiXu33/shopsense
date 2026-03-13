@@ -9,10 +9,10 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # ── Qdrant ──────────────────────────────────────────────────────────────────
-QDRANT_URL = os.getenv("QDRANT_URL")
-QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
+QDRANT_URL = os.getenv("QDRANT_URL", "http://127.0.0.1:6333")
+QDRANT_API_KEY = os.getenv("QDRANT_API_KEY") or None
 
-# Collection names
+# Collection names (Legacy - 兼容旧代码)
 COLLECTIONS = {
     "visual": "product_visual_desc",
     "reviews": "reviews_chunks",
@@ -20,16 +20,27 @@ COLLECTIONS = {
     "sizing": "sizing_guide",
 }
 
-VECTOR_SIZE = 384  # matches all-MiniLM-L6-v2
+# New Qdrant-First Collections
+QDRANT_COLLECTIONS = {
+    "products": "products_v2",           # 商品语义搜索
+    "reviews": "reviews_v2",             # 评价语义搜索
+    "knowledge": "knowledge_v2",         # 专业知识
+    "visual_semantic": "visual_semantic_v2",  # 视觉语义
+}
 
-# ── HuggingFace ──────────────────────────────────────────────────────────────
-HF_API_KEY = os.getenv("HF_API_KEY")
+VECTOR_SIZE = int(os.getenv("VECTOR_SIZE", "1024"))
 
+# ── Model Provider (OpenAI-compatible) ──────────────────────────────────────
+DASHSCOPE_BASE_URL = os.getenv(
+    "DASHSCOPE_BASE_URL", "https://dashscope.aliyuncs.com/compatible-mode/v1"
+)
+DASHSCOPE_API_KEY = os.getenv("DASHSCOPE_API_KEY")
 
-QWEN_MODEL = "Qwen/Qwen2.5-VL-72B-Instruct"
+TEXT_MODEL = os.getenv("TEXT_MODEL", "qwen3.5-35b-a3b")
+VISION_MODEL = os.getenv("VISION_MODEL", "qwen3.5-35b-a3b")
 
-# Embedding model (runs locally, no API cost)
-EMBED_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
+# Embedding model (DashScope OpenAI-compatible endpoint)
+EMBED_MODEL = os.getenv("EMBED_MODEL", "text-embedding-v4")
 
 # ── Retrieval ────────────────────────────────────────────────────────────────
 TOP_K = 5  # results per Qdrant query
