@@ -4,16 +4,16 @@ import SearchPage from './pages/SearchPage'
 import DetailPage from './pages/DetailPage'
 
 const THEMES = [
-  { id: 'light',        label: '☀️ 浅色',   ariaLabel: '切换到浅色主题' },
-  { id: 'dark',         label: '🌙 深色',   ariaLabel: '切换到深色主题' },
-  { id: 'high-contrast',label: '◐ 高对比度', ariaLabel: '切换到高对比度主题' },
+  { id: 'light',        label: '☀️ Light',        ariaLabel: 'Switch to light theme' },
+  { id: 'dark',         label: '🌙 Dark',          ariaLabel: 'Switch to dark theme' },
+  { id: 'high-contrast',label: '◐ High Contrast',  ariaLabel: 'Switch to high contrast theme' },
 ]
 
 function Header({ theme, setTheme }) {
   return (
     <header className="global-header" role="banner">
       <div className="global-header__inner">
-        <a href="/" className="header-logo" aria-label="ShopSense 首页">
+        <a href="/" className="header-logo" aria-label="ShopSense home">
           <svg width="28" height="28" viewBox="0 0 32 32" fill="none" aria-hidden="true">
             <rect width="32" height="32" rx="8" fill="var(--brand)" />
             <path
@@ -27,7 +27,7 @@ function Header({ theme, setTheme }) {
           <span className="header-logo__text">ShopSense</span>
         </a>
 
-        <div className="theme-switcher" role="group" aria-label="主题选择">
+        <div className="theme-switcher" role="group" aria-label="Theme selection">
           {THEMES.map(t => (
             <button
               key={t.id}
@@ -57,7 +57,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <a href="#main-content" className="skip-link">跳到主内容</a>
+      <a href="#main-content" className="skip-link">Skip to main content</a>
       <Header theme={theme} setTheme={setTheme} />
       <Routes>
         <Route path="/" element={<SearchPage />} />

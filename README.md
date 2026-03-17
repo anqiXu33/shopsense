@@ -1,72 +1,70 @@
-# ShopSense 🛍️
+# ShopSense
 **Accessible Shopping Assistant for Visually Impaired Users**
 Qdrant Hackathon 2025 — Context Engineering Track
 
 ---
 
 ## Stack
-| Component | Technology | Why |
-|---|---|---|
-| Vector DB | Qdrant Cloud | Hackathon requirement |
-| Vision Model | LLaVA-1.5 (HuggingFace) | Free, strong multimodal |
-| LLM | Mistral-7B-Instruct (HF API) | Free tier, good instruction-following |
-| Embeddings | sentence-transformers (local) | No API cost |
-| UI | Gradio | Fast to build, researcher-friendly |
+| Component | Technology |
+|---|---|
+| Vector DB | Qdrant Cloud |
+| LLM | Groq (llama-3.3-70b, OpenAI-compatible) |
+| Embeddings | sentence-transformers (local, no API key) |
+| Backend | FastAPI |
+| Frontend | React + Vite |
 
 ---
 
 ## Project Structure
 ```
 shopsense/
-├── config/
-│   └── settings.py          # API keys, model names, Qdrant config
-├── data/
-│   └── sample_products.json # Demo product dataset (30 products)
+├── config/settings.py       # Central config (reads from .env)
+├── core/embeddings.py       # Local embedding model (all-MiniLM-L6-v2)
+├── backend/main.py          # FastAPI server
+├── frontend/                # React + Vite UI
+├── data/                    # JSON data files
 ├── scripts/
-│   ├── ingest.py            # Load products → Qdrant (run once)
-│   └── build_knowledge.py   # Build material knowledge base
-├── agent/
-│   ├── tools.py             # Visual analysis, Qdrant search tools
-│   ├── intent.py            # Intent classifier + entity extractor
-│   ├── planner.py           # Task planner (DAG mode)
-│   ├── context_engineer.py  # Context assembly with token budgeting
-│   └── agent.py             # Main agent loop
-├── frontend/
-│   └── app.py               # Gradio UI
+│   ├── setup_collections.py # Create Qdrant collections (run once)
+│   └── ingest_all.py        # Load data into Qdrant (run once)
 ├── requirements.txt
-└── README.md
+└── .env.example
 ```
 
 ---
 
-## Quickstart (React + FastAPI)
+## Quickstart
 
 ### 1. 配置 API Keys
 
-创建 `.env` 文件（参考 `config/settings.py`）：
-```
-DASHSCOPE_API_KEY=your_key_here
-QDRANT_URL=http://127.0.0.1:6333
-```
-
-### 2. 启动 Qdrant
-
 ```bash
-docker run -p 6333:6333 qdrant/qdrant
+cp .env.example .env
+# 编辑 .env，填入你自己的 key
 ```
 
-### 3. 导入数据（首次运行）
+需要的 key：
+- **QDRANT_URL / QDRANT_API_KEY** — [Qdrant Cloud](https://cloud.qdrant.io) 免费集群
+- **DASHSCOPE_API_KEY** — [Groq](https://console.groq.com) 免费 API（或其他 OpenAI 兼容接口）
+
+### 2. 安装 Python 依赖
 
 ```bash
 pip install -r requirements.txt
-python scripts/ingest_v2.py
+```
+
+### 3. 初始化 Qdrant（首次运行）
+
+```bash
+# 创建 collections
+python scripts/setup_collections.py
+
+# 导入数据（会自动下载 embedding 模型，约 90MB）
+python scripts/ingest_all.py
 ```
 
 ### 4. 启动后端
 
 ```bash
 cd backend
-pip install fastapi uvicorn
 uvicorn main:app --reload --port 8000
 ```
 
@@ -82,30 +80,9 @@ npm run dev
 
 ---
 
-### 快速体验（Mock 模式，无需 API Key）
+## 注意事项
 
-仅启动后端和前端即可体验 UI（回答为模拟数据）：
-```bash
-# 终端 1
-cd backend && uvicorn main:app --reload --port 8000
-
-# 终端 2
-cd frontend && npm install && npm run dev
-```
-
----
-
-## Quickstart (Legacy Gradio)
-
-```bash
-# 1. Install dependencies
-pip install -r requirements.txt
-
-# 2. Set your API keys in config/settings.py
-
-# 3. Ingest data into Qdrant (run once)
-python scripts/ingest.py
-
-# 4. Launch the app
-python frontend/app.py
-```
+- 首次运行 `ingest_all.py` 时会自动下载 `all-MiniLM-L6-v2` 模型（约 90MB），需要联网
+- `.env` 文件已加入 `.gitignore`，**不要**将真实 API key 提交到仓库
+- Qdrant Cloud 免费套餐足够运行本项目
+- Groq 免费套餐每天有 token 限额，正常体验足够

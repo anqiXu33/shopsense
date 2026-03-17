@@ -78,7 +78,7 @@ class VisualSemanticSearchTool(BaseTool):
                 item = {
                     "asin": point.payload.get("asin"),
                     "image_type": point.payload.get("image_type"),
-                    "description": point.payload.get("description"),
+                    "description": point.payload.get("text") or point.payload.get("description"),
                     "attributes": point.payload.get("attributes", {}),
                     "relevance_score": round(point.score, 4)
                 }

@@ -22,13 +22,13 @@ COLLECTIONS = {
 
 # New Qdrant-First Collections
 QDRANT_COLLECTIONS = {
-    "products": "products_v2",           # 商品语义搜索
-    "reviews": "reviews_v2",             # 评价语义搜索
-    "knowledge": "knowledge_v2",         # 专业知识
-    "visual_semantic": "visual_semantic_v2",  # 视觉语义
+    "products": "products",
+    "reviews": "reviews",
+    "knowledge": "knowledge",
+    "visual_semantic": "visual_semantic",
 }
 
-VECTOR_SIZE = int(os.getenv("VECTOR_SIZE", "1024"))
+VECTOR_SIZE = int(os.getenv("VECTOR_SIZE", "384"))
 
 # ── Model Provider (OpenAI-compatible) ──────────────────────────────────────
 DASHSCOPE_BASE_URL = os.getenv(

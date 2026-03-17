@@ -93,7 +93,7 @@ class KnowledgeRetrievalTool(BaseTool):
                     "material": point.payload.get("material"),
                     "topic": point.payload.get("topic"),
                     "category": point.payload.get("category"),
-                    "content": point.payload.get("content"),
+                    "text": point.payload.get("text", ""),  # knowledge payload uses "text" field
                     "properties": point.payload.get("properties", ""),
                     "skin_notes": point.payload.get("skin_notes", ""),
                     "warmth_range": point.payload.get("warmth_range", ""),

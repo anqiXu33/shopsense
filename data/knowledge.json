@@ -1,0 +1,164 @@
+[
+  {
+    "topic": "down_insulation",
+    "material": "duck down",
+    "category": "outerwear",
+    "text": "Duck down insulation works by trapping air between fine clusters, creating a barrier against cold air. Fill power measures loft quality: 400-fill is warm to about -5°C, 600-fill to -10°C, and 700+ fill to -15°C or below. Higher fill power means more warmth per gram of down. Duck down is widely used and cost-effective; goose down has larger clusters and higher loft. Down loses insulating ability when wet, so a water-resistant outer shell is important."
+  },
+  {
+    "topic": "down_insulation",
+    "material": "goose down",
+    "category": "outerwear",
+    "text": "Goose down with 800 fill power is the highest quality available, suitable for extreme cold below -15°C. The large clusters create exceptional loft and warmth. An 800-fill goose down coat can keep the wearer warm in arctic conditions. The ripstop nylon outer shell prevents down from escaping and resists abrasion. For maximum warmth retention, choose a coat with a stand collar and minimal seams at key warmth points like the neck and wrists."
+  },
+  {
+    "topic": "merino_wool",
+    "material": "merino wool",
+    "category": "knitwear",
+    "text": "Extra-fine merino wool has a fiber diameter under 18.5 microns, making it non-irritating even for people with sensitive skin. Unlike regular wool (which can cause itching due to coarser fibers), fine merino lies flat against the skin. Merino is naturally temperature-regulating: it keeps you warm in cold weather and cool in mild weather. It is also naturally odor-resistant due to lanolin, making it ideal for travel and multi-day wear. Merino is suitable for people with mild wool sensitivity, though those with true wool allergies may still react."
+  },
+  {
+    "topic": "cashmere",
+    "material": "cashmere",
+    "category": "knitwear",
+    "text": "Cashmere comes from the soft undercoat of cashmere goats. Grade A cashmere has fiber diameter under 14 microns, making it extremely soft and hypoallergenic. Cashmere is roughly 8 times warmer than sheep's wool by weight, making it ideal for lightweight warm garments. It is suitable for sensitive skin and people who react to regular wool. Cashmere requires hand washing in cool water to prevent shrinking and pilling. Pilling is natural and can be reduced with a cashmere comb. Cashmere-silk blends add a smooth drape and slight sheen while maintaining warmth."
+  },
+  {
+    "topic": "bamboo_fabric",
+    "material": "bamboo viscose",
+    "category": "knitwear",
+    "text": "Bamboo viscose is made by processing bamboo pulp into soft fibers. It is exceptionally gentle on skin due to its smooth round fiber structure, with no sharp ends that irritate. Bamboo fabric is naturally antibacterial and temperature-regulating, staying cool in warm conditions and warm in cool conditions. It is highly recommended for people with eczema, contact dermatitis, or sensitive skin. Bamboo is breathable and moisture-wicking. However, it wrinkles easily and loses strength when wet, so handle gently when washing."
+  },
+  {
+    "topic": "waterproof_fabric",
+    "material": "waterproof membrane",
+    "category": "outerwear",
+    "text": "Waterproof membranes in outerwear use microscopic pores that are smaller than water droplets but larger than vapor molecules, keeping rain out while allowing sweat to escape. A coat rated waterproof (not just water-resistant) will resist sustained heavy rain. The DWR (Durable Water Repellent) coating on the outer shell beads water initially, but the membrane provides the true waterproof barrier. Seam-sealed construction prevents water from entering through stitching. Water-resistant coats handle light rain and drizzle but will soak through in sustained heavy rain."
+  },
+  {
+    "topic": "fleece_fabric",
+    "material": "polyester fleece",
+    "category": "casual",
+    "text": "Fleece is a synthetic fabric made from polyester, offering warmth without significant weight. The pile weight, measured in grams per square meter (GSM), indicates thickness: 100gsm is lightweight, 200gsm is mid-weight, 300gsm is heavy. Anti-pill fleece has a denser surface that resists the small fiber balls that appear with wear. Fleece is not windproof on its own but excels as a mid-layer under a shell jacket. Recycled polyester fleece has the same thermal properties as virgin polyester while reducing environmental impact."
+  },
+  {
+    "topic": "thermal_layering",
+    "material": "merino wool blend",
+    "category": "activewear",
+    "text": "Thermal base layers work by trapping a thin layer of warm air against the skin and wicking moisture away from the body. Merino wool base layers are superior to synthetic because they regulate temperature naturally and resist odor. Flatlock seams lie flat against the skin rather than raising a ridge, preventing chafing during movement. For skiing or winter sports at -10°C to -15°C, a thermal base layer plus a mid-layer plus a waterproof outer shell is the standard system. The base layer should fit close to the body without restricting movement."
+  },
+  {
+    "topic": "linen_fabric",
+    "material": "linen",
+    "category": "shirts",
+    "text": "Linen is one of the most breathable natural fabrics, made from flax plant fibers. Its loose weave allows air to circulate freely, making it ideal for hot and humid climates. Belgian linen is considered the highest quality, with fine consistent fibers. Linen is naturally hypoallergenic and safe for sensitive skin. It becomes softer and more comfortable with each wash. Linen wrinkles easily, which is a natural characteristic of the fabric. It is not suitable as a warm layer for cold weather, but excellent for temperatures above 20°C."
+  },
+  {
+    "topic": "cotton_fabric",
+    "material": "cotton",
+    "category": "shirts",
+    "text": "Oxford cotton weave creates a textured, durable fabric that holds its shape well. 100% cotton is naturally hypoallergenic and rarely causes skin reactions, making it suitable for people with contact dermatitis or sensitive skin. Cotton breathes well in mild temperatures (15-25°C) but loses its insulating properties when wet and can feel cold in damp conditions. Machine washable cotton is very practical. Cotton tends to shrink on the first wash if exposed to hot water, so use cool or warm water for the first wash."
+  },
+  {
+    "topic": "softshell_fabric",
+    "material": "softshell polyester",
+    "category": "outerwear",
+    "text": "Softshell fabric combines a stretchy woven outer layer with a fleece or bonded inner layer, providing wind resistance, light water resistance, and stretch. It is more flexible and comfortable than a hardshell jacket but less waterproof. Softshell jackets are ideal for high-output activities like hiking and climbing where breathability and freedom of movement are important. The articulated panels at the elbows and shoulders allow full range of arm movement. Softshell is windproof in most conditions but will soak through in sustained rain."
+  },
+  {
+    "topic": "sensitive_skin_guide",
+    "material": "various",
+    "category": "general",
+    "text": "For sensitive skin, the best fabric choices are: (1) Extra-fine merino wool under 18.5 microns - non-irritating unlike regular wool. (2) Grade A cashmere - extremely fine and soft. (3) Bamboo viscose - smooth fibers with no irritating ends. (4) 100% cotton - hypoallergenic and breathable. (5) Bamboo-cotton blends. Fabrics to avoid with sensitive skin: regular wool, rough synthetic linings, fabrics with formaldehyde finishes, and garments with rough seams at contact points. Flatlock seams are preferable as they don't create ridges against the skin."
+  },
+  {
+    "topic": "sizing_guide",
+    "material": "various",
+    "category": "general",
+    "text": "When buying clothing online, key measurements are: chest (measure around the fullest part), waist (natural waist), hip (fullest part), and inseam (crotch to ankle). For outerwear, consider that you may be layering underneath: go up one size if you plan to wear a thick sweater. Merino knitwear typically runs slim due to the fine knit structure. Oversized items are intentionally cut large; check the specific fit description. Height affects coat length: shorter buyers may find standard-length coats too long. For footwear, half-size up is recommended if between sizes."
+  },
+  {
+    "topic": "care_instructions",
+    "material": "wool",
+    "category": "knitwear",
+    "text": "Wool and cashmere garments require gentle care to prevent shrinking, felting, and pilling. Always hand wash in cool water (below 30°C) with a gentle detergent, or use a delicate machine cycle in a mesh laundry bag. Never wring wool out - press gently to remove excess water. Lay flat on a clean towel to dry, reshaping to original dimensions. Do not hang wet wool as it will stretch and lose shape. Store folded, not hung. Cedar balls prevent moth damage. Pilling is natural; use a cashmere comb or fabric shaver to remove pills."
+  },
+  {
+    "topic": "temperature_rating",
+    "material": "various",
+    "category": "outerwear",
+    "text": "Clothing temperature ratings are approximate and vary by individual. Active people generate more heat and need less insulation than sedentary people in the same conditions. Recommended layering by temperature: Above 10°C - single layer shirt or light sweater. 5-10°C - mid-layer (fleece or light down). 0-5°C - warm mid-layer plus windproof shell. -5 to 0°C - down jacket or thick wool coat. -10 to -5°C - high-fill down jacket. Below -15°C - 800-fill down or goose down blanket coat with full body coverage. Thermal base layers add approximately 5°C of effective warmth."
+  },
+  {
+    "topic": "corduroy_fabric",
+    "material": "cotton corduroy",
+    "category": "shirts",
+    "text": "Corduroy is a textured cotton fabric with parallel ridged lines (called wales). Fine-wale corduroy (more lines per inch) is softer and more formal-looking. Cotton corduroy is naturally soft and generally suitable for sensitive skin. It is not a very warm fabric on its own, being suitable as a light outer layer in 10-18°C temperatures. Corduroy is durable and improves in softness with washing. The color may fade slightly over time, which many wearers find adds to its charm. Machine wash inside out in cool water to preserve color."
+  },
+  {
+    "topic": "synthetic_fill_insulation",
+    "material": "synthetic fill",
+    "category": "outerwear",
+    "text": "Synthetic fill insulation uses polyester microfibers engineered to mimic down clusters. Unlike down, synthetic fill retains warmth when wet — a key advantage in rain or snow. A vest or jacket with synthetic fill rated for 0°C to -10°C typically uses 150–200g of fill. Synthetic insulation is hypoallergenic and suitable for people with down or feather allergies. It is easier to wash than down (machine-washable on a gentle cycle) and dries faster. The main trade-off versus down is that synthetic is heavier for the same warmth level and compresses less compactly. Puffer vests provide core warmth while leaving arms free, making them ideal as a mid-layer under a shell or over a light shirt at 5–15°C."
+  },
+  {
+    "topic": "nylon_shell_outerwear",
+    "material": "nylon shell",
+    "category": "outerwear",
+    "text": "Ripstop nylon is a lightweight, tightly woven fabric reinforced with a grid of thicker threads. It resists tearing — if a small hole forms, the ripstop grid stops it from spreading. Nylon shells are used in down and synthetic fill jackets because the tight weave prevents fill from escaping and blocks wind effectively. Nylon is naturally water-resistant (not fully waterproof unless membrane-coated) and dries quickly after light rain. Matte-finish nylon has a quieter, less crinkly feel than shiny nylon. A nylon shell combined with down or synthetic fill provides the best warmth-to-weight ratio in outerwear."
+  },
+  {
+    "topic": "outerwear_fill_weight_guide",
+    "material": "down",
+    "category": "outerwear",
+    "text": "Fill weight (in grams) measures how much insulation is in a jacket or vest, distinct from fill power which measures loft quality. For duck down jackets: 200–300g fill is suitable for 0°C to -5°C, 400–500g fill for -5°C to -15°C, 600g+ for below -15°C. For vests, the core coverage means you can have 150–250g fill and still feel warm down to -5°C when layered. Combining a 450g duck down jacket shell with a thermal base layer extends effective warmth by approximately 5°C. Always check both fill power and fill weight: a small amount of 800-fill down can outperform a large amount of 400-fill down."
+  },
+  {
+    "topic": "down_jacket_care",
+    "material": "duck down",
+    "category": "outerwear",
+    "text": "Down jackets require specific care to maintain loft and insulating performance. Machine wash on a gentle/delicate cycle in cool water with a small amount of down-specific or mild liquid detergent — never use fabric softener or powder detergent. Tumble dry on low heat with 2–3 clean tennis balls or dryer balls; these break up clumps and restore loft. Drying takes 2–3 cycles. Never hang a wet down jacket — the fill will clump and dry unevenly. Store uncompressed in a large breathable bag, not in its stuff sack, to preserve cluster integrity. Spot-clean the shell between washes to extend the time between full washes."
+  },
+  {
+    "topic": "cashmere_silk_blend",
+    "material": "cashmere + silk blend",
+    "category": "accessories",
+    "text": "Cashmere-silk blends combine the exceptional softness and warmth of cashmere with the smooth drape, sheen, and strength of silk. Silk fibers strengthen the blend, reducing pilling significantly compared to pure cashmere. The resulting fabric is lightweight, warm, and has a subtle natural luster. A scarf in cashmere-silk blend is warmer than a pure wool or synthetic alternative of the same weight. The blend is hypoallergenic and suitable for sensitive skin. Care: hand wash in cool water (below 30°C) with a gentle detergent — silk weakens in hot water. Lay flat to dry; avoid direct sunlight which can fade and weaken silk fibers. Store folded in a cool, dry place."
+  },
+  {
+    "topic": "stretch_denim",
+    "material": "cotton + elastane",
+    "category": "bottoms",
+    "text": "Stretch denim combines cotton warp threads with a small percentage of elastane (typically 1–3%) to allow two-way or four-way stretch. This makes the jeans comfortable for bending, sitting, and movement while holding their shape. Indigo dye is locked into the cotton fibers and will fade with wear — this natural fading is considered a characteristic of quality denim. Wash inside-out in cold water to slow fading and protect color. Avoid tumble drying on high heat as this degrades elastane, causing the fabric to lose stretch over time. Air dry flat or hang from the waist. Elastane garments should not be bleached. With proper care, stretch denim retains its stretch for 2–3 years of regular wear."
+  },
+  {
+    "topic": "bamboo_viscose_care",
+    "material": "bamboo viscose",
+    "category": "loungewear",
+    "text": "Bamboo viscose loungewear requires gentle handling. Machine wash on a delicate cycle in cool water (30°C maximum) — hot water causes shrinkage and weakens the fibers. Use a mild liquid detergent; avoid enzyme-based detergents which break down viscose fibers. Do not wring or twist the fabric when wet as bamboo viscose loses strength when wet. Tumble dry on low heat or air dry away from direct sunlight; UV light yellows bamboo fabric. The fabric may wrinkle easily — use a low-temperature iron or steam to remove creases. Bamboo viscose is breathable and moisture-wicking, making it ideal for loungewear and sleepwear worn directly against the skin."
+  },
+  {
+    "topic": "merino_accessories_care",
+    "material": "merino wool blend",
+    "category": "accessories",
+    "text": "Merino wool socks and accessories maintain warmth even when slightly damp, which is important for outdoor and athletic use. Merino socks are suitable for temperatures from -10°C to 20°C depending on thickness: thin merino socks work for cool-weather running (5–15°C), thick ribbed merino socks for hiking and skiing (-5°C to 5°C). The cushioned sole construction reduces impact during running. Machine wash on a wool or delicate cycle in cool water (30°C); merino can handle gentle machine washing unlike regular wool. Do not tumble dry on high — air dry or low heat. Merino's natural lanolin provides odor resistance, so socks can be worn 2–3 times between washes in low-sweat conditions."
+  },
+  {
+    "topic": "trench_coat_care",
+    "material": "polyester + waterproof membrane",
+    "category": "outerwear",
+    "text": "Waterproof trench coats with detachable wool-blend linings require two separate care approaches. The outer shell (polyester with waterproof membrane): machine wash on a gentle cycle in cool water with a technical fabric wash or mild detergent; avoid fabric softener which clogs membrane pores and reduces waterproofing. Tumble dry on low to reactivate the DWR (Durable Water Repellent) coating — heat from drying restores water beading. The removable wool-blend lining: dry clean recommended, or hand wash separately in cool water and lay flat to dry. Reapply DWR spray annually or when water no longer beads on the shell surface. Store on a wide hanger to preserve structured shoulders."
+  },
+  {
+    "topic": "warmth_layering_system",
+    "material": "various",
+    "category": "outerwear",
+    "text": "The three-layer system optimizes warmth and moisture management: (1) Base layer — wicks moisture away from skin; merino wool or synthetic. (2) Mid layer — insulates by trapping warm air; fleece, down vest, or puffer jacket. (3) Outer shell — blocks wind and rain; waterproof or windproof jacket. For urban daily wear, a thick down jacket (450g+ fill) often combines layers 2 and 3, worn over a light base layer. For active outdoor use at -10°C, a thin merino base layer + fleece mid layer + softshell jacket is more breathable than a single heavy down jacket. Vests provide core warmth without bulk at the arms — ideal for activities requiring arm movement."
+  },
+  {
+    "topic": "color_care_guide",
+    "material": "various",
+    "category": "general",
+    "text": "Color preservation depends on dye type and fabric. Dark colors (navy, black, rust) fade faster than light colors and require more care. Always wash dark garments inside-out in cold water — hot water opens fibers and releases dye. Use a color-protecting or gentle detergent, not a brightening detergent which strips pigments. Avoid prolonged sunlight exposure during drying as UV radiation breaks down dye molecules. New dark garments may bleed dye on first wash — wash separately. Corduroy and denim fade gracefully with wear; this is a natural characteristic. Synthetic dyes on polyester are more colorfast than natural dyes on cotton or linen. White garments should be washed separately to avoid color transfer."
+  }
+]

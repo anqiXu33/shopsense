@@ -8,7 +8,7 @@ function StarRating({ rating, count }) {
   return (
     <p className="product-card__rating">
       <span aria-hidden="true">{stars}</span>
-      {' '}{rating.toFixed(1)} 分（{count.toLocaleString()} 条评价）
+      {' '}{rating.toFixed(1)} ({count.toLocaleString()} reviews)
     </p>
   )
 }
@@ -37,12 +37,12 @@ export default function SearchPage() {
   return (
     <main id="main-content" className="page">
       <div className="search-hero">
-        <h1 className="search-hero__title">发现适合你的商品</h1>
-        <p className="search-hero__sub">AI 驱动的无障碍购物助手</p>
+        <h1 className="search-hero__title">Find what's right for you</h1>
+        <p className="search-hero__sub">AI-powered accessible shopping assistant</p>
 
         <div className="search-box">
           <label htmlFor="product-search" className="sr-only">
-            搜索商品名称或品牌
+            Search by product name or brand
           </label>
           <div className="search-box__inner">
             <svg
@@ -63,7 +63,7 @@ export default function SearchPage() {
               id="product-search"
               type="search"
               className="search-box__input"
-              placeholder="搜索商品名称或品牌"
+              placeholder="Search by name or brand"
               value={query}
               onChange={e => setQuery(e.target.value)}
               autoComplete="off"
@@ -73,7 +73,7 @@ export default function SearchPage() {
               <button
                 className="search-box__clear"
                 onClick={() => { setQuery(''); inputRef.current?.focus() }}
-                aria-label="清除搜索内容"
+                aria-label="Clear search"
               >
                 ×
               </button>
@@ -89,11 +89,11 @@ export default function SearchPage() {
         aria-atomic="true"
         className="sr-only"
       >
-        {!loading && `找到 ${filtered.length} 件商品`}
+        {!loading && `${filtered.length} product${filtered.length !== 1 ? 's' : ''} found`}
       </p>
 
       {loading && (
-        <ul className="product-grid" aria-label="加载中" aria-busy="true">
+        <ul className="product-grid" aria-label="Loading" aria-busy="true">
           {Array.from({ length: 6 }).map((_, i) => (
             <li key={i}>
               <div className="product-card product-card--skeleton" aria-hidden="true" />
@@ -104,9 +104,9 @@ export default function SearchPage() {
 
       {error && (
         <div className="empty-state" role="alert">
-          <p>加载失败：{error}</p>
+          <p>Failed to load: {error}</p>
           <p style={{ marginTop: '0.5rem', fontSize: '0.9375rem' }}>
-            请确认后端服务已启动（uvicorn main:app --port 8000）
+            Make sure the backend is running (uvicorn main:app --port 8000)
           </p>
         </div>
       )}
@@ -115,26 +115,26 @@ export default function SearchPage() {
         <>
           <p className="results-count" aria-hidden="true">
             {query
-              ? `找到 ${filtered.length} 件商品（共 ${products.length} 件）`
-              : `全部 ${filtered.length} 件商品`}
+              ? `${filtered.length} of ${products.length} products`
+              : `All ${filtered.length} products`}
           </p>
 
           {filtered.length === 0 ? (
             <div className="empty-state">
-              <p>未找到与「{query}」相关的商品，请尝试其他关键词。</p>
+              <p>No products found for "{query}". Try a different keyword.</p>
             </div>
           ) : (
             <ul
               id="product-grid"
               className="product-grid"
               role="list"
-              aria-label="商品列表"
+              aria-label="Product list"
             >
               {filtered.map(product => (
                 <li key={product.asin} role="listitem">
                   <article
                     className="product-card"
-                    aria-label={`${product.name}，${product.brand}，¥${product.price.toFixed(2)}，评分 ${product.rating.toFixed(1)} 分`}
+                    aria-label={`${product.name}, ${product.brand}, CHF ${product.price.toFixed(2)}, rated ${product.rating.toFixed(1)} stars`}
                   >
                     <a
                       href={`/product/${product.asin}`}
@@ -165,7 +165,7 @@ export default function SearchPage() {
                         <p className="product-card__brand">{product.brand}</p>
                         <h2 className="product-card__name">{product.name}</h2>
                         <StarRating rating={product.rating} count={product.review_count} />
-                        <p className="product-card__price">¥{product.price.toFixed(2)}</p>
+                        <p className="product-card__price">CHF {product.price.toFixed(2)}</p>
                       </div>
                     </a>
                   </article>
