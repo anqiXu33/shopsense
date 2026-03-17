@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
+import { useVoiceInput, voiceShortcutLabel } from '../hooks/useVoiceInput'
 
 const API_BASE = 'http://localhost:8000'
 
@@ -13,11 +14,21 @@ function StarRating({ rating, count }) {
   )
 }
 
+// Speak a short status message using browser TTS (no backend needed)
+function announce(text) {
+  speechSynthesis.cancel()
+  const utt = new SpeechSynthesisUtterance(text)
+  utt.lang = 'en-US'
+  utt.rate = 1.0
+  speechSynthesis.speak(utt)
+}
+
 export default function SearchPage() {
   const [products, setProducts] = useState([])
   const [query, setQuery] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [voiceStatus, setVoiceStatus] = useState('')
   const inputRef = useRef(null)
 
   useEffect(() => {
@@ -29,6 +40,30 @@ export default function SearchPage() {
       .then(data => { setProducts(data); setLoading(false) })
       .catch(err => { setError(err.message); setLoading(false) })
   }, [])
+
+  const handleVoiceResult = useCallback(transcript => {
+    setQuery(transcript)
+    setVoiceStatus(`Voice search: ${transcript}`)
+    announce(`Searching for ${transcript}`)
+    inputRef.current?.focus()
+  }, [])
+
+  const handleVoiceStart = useCallback(() => {
+    setVoiceStatus('Listening…')
+    announce('Listening')
+  }, [])
+
+  const handleVoiceEnd = useCallback(() => {
+    setVoiceStatus('')
+  }, [])
+
+  const { listening, start: startVoice, supported: voiceSupported } = useVoiceInput({
+    lang: 'en-US',
+    onResult: handleVoiceResult,
+    onStart: handleVoiceStart,
+    onEnd: handleVoiceEnd,
+    globalShortcut: true,
+  })
 
   const filtered = products.filter(p =>
     (p.name + ' ' + p.brand).toLowerCase().includes(query.toLowerCase())
@@ -44,6 +79,11 @@ export default function SearchPage() {
           <label htmlFor="product-search" className="sr-only">
             Search by product name or brand
           </label>
+          {/* Voice status live region */}
+          <div aria-live="assertive" aria-atomic="true" className="sr-only">
+            {voiceStatus}
+          </div>
+
           <div className="search-box__inner">
             <svg
               className="search-box__icon"
@@ -61,13 +101,14 @@ export default function SearchPage() {
             <input
               ref={inputRef}
               id="product-search"
-              type="search"
+              type="text"
               className="search-box__input"
               placeholder="Search by name or brand"
               value={query}
               onChange={e => setQuery(e.target.value)}
               autoComplete="off"
               aria-controls="product-grid"
+              aria-describedby={voiceSupported ? 'voice-hint-search' : undefined}
             />
             {query && (
               <button
@@ -78,7 +119,23 @@ export default function SearchPage() {
                 ×
               </button>
             )}
+            {voiceSupported && (
+              <button
+                className={`voice-btn${listening ? ' voice-btn--active' : ''}`}
+                onClick={startVoice}
+                aria-label={listening ? 'Stop listening' : `Voice input (${voiceShortcutLabel()})`}
+                aria-pressed={listening}
+                type="button"
+              >
+                <MicIcon listening={listening} />
+              </button>
+            )}
           </div>
+          {voiceSupported && (
+            <p id="voice-hint-search" className="sr-only">
+              Press {voiceShortcutLabel()} to activate voice input
+            </p>
+          )}
         </div>
       </div>
 
@@ -176,5 +233,33 @@ export default function SearchPage() {
         </>
       )}
     </main>
+  )
+}
+
+function MicIcon({ listening }) {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {listening ? (
+        // Square "stop" icon when active
+        <rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" stroke="none" />
+      ) : (
+        <>
+          <rect x="9" y="2" width="6" height="12" rx="3" />
+          <path d="M5 10a7 7 0 0 0 14 0" />
+          <line x1="12" y1="17" x2="12" y2="22" />
+          <line x1="9" y1="22" x2="15" y2="22" />
+        </>
+      )}
+    </svg>
   )
 }

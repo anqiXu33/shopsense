@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, Link } from 'react-router-dom'
+import { useVoiceInput, voiceShortcutLabel } from '../hooks/useVoiceInput'
 
 const API_BASE = 'http://localhost:8000'
 
@@ -10,6 +11,28 @@ const QUICK_QUESTIONS = [
   'Does the color match the photos?',
   'Fits someone 175cm / 65kg?',
 ]
+
+function MicIcon({ listening }) {
+  return (
+    <svg
+      width="20" height="20" viewBox="0 0 24 24"
+      fill="none" stroke="currentColor" strokeWidth="2"
+      strokeLinecap="round" strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {listening ? (
+        <rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" stroke="none" />
+      ) : (
+        <>
+          <rect x="9" y="2" width="6" height="12" rx="3" />
+          <path d="M5 10a7 7 0 0 0 14 0" />
+          <line x1="12" y1="17" x2="12" y2="22" />
+          <line x1="9" y1="22" x2="15" y2="22" />
+        </>
+      )}
+    </svg>
+  )
+}
 
 // ── Agent Sub-panels ─────────────────────────────────────────────────────
 
@@ -213,12 +236,42 @@ export default function DetailPage() {
   const [speaking, setSpeaking] = useState(false)
   const [speakingMsgIdx, setSpeakingMsgIdx] = useState(null)
   const [ttsLoading, setTtsLoading] = useState(false)
+  const [voiceStatus, setVoiceStatus] = useState('')
 
   const inputRef = useRef(null)
   const chatLogRef = useRef(null)
   const voicesRef = useRef([])
   const audioRef = useRef(null)
   const mountedRef = useRef(true)
+
+  const handleVoiceResult = useCallback(transcript => {
+    setQuestion(transcript)
+    setVoiceStatus(`Voice input: ${transcript}`)
+    // Brief TTS confirmation then auto-submit
+    const utt = new SpeechSynthesisUtterance(`Got it. Asking: ${transcript}`)
+    utt.lang = /[\u4e00-\u9fff]/.test(transcript) ? 'zh-CN' : 'en-US'
+    utt.rate = 1.0
+    speechSynthesis.cancel()
+    speechSynthesis.speak(utt)
+    utt.onend = () => submitQuery(transcript)
+  }, []) // submitQuery is stable (defined below, uses refs internally)
+
+  const handleVoiceStart = useCallback(() => {
+    setVoiceStatus('Listening…')
+    setStatusAssertive('Listening for your question…')
+  }, [])
+
+  const handleVoiceEnd = useCallback(() => {
+    setVoiceStatus('')
+    setStatusAssertive('')
+  }, [])
+
+  const { listening, start: startVoice, supported: voiceSupported } = useVoiceInput({
+    onResult: handleVoiceResult,
+    onStart: handleVoiceStart,
+    onEnd: handleVoiceEnd,
+    globalShortcut: true,
+  })
 
   useEffect(() => {
     fetch(`${API_BASE}/api/products/${asin}`)
@@ -568,18 +621,42 @@ export default function DetailPage() {
               <label htmlFor="q-input" className="query-form__label">
                 Your question
               </label>
-              <input
-                ref={inputRef}
-                id="q-input"
-                type="text"
-                className="query-form__input"
-                placeholder="e.g. Is it warm enough for winter outdoor use?"
-                value={question}
-                onChange={e => setQuestion(e.target.value)}
-                disabled={querying}
-                aria-disabled={querying}
-                autoComplete="off"
-              />
+              {/* Voice status live region */}
+              <div aria-live="assertive" aria-atomic="true" className="sr-only">
+                {voiceStatus}
+              </div>
+              <div className="query-form__input-row">
+                <input
+                  ref={inputRef}
+                  id="q-input"
+                  type="text"
+                  className="query-form__input"
+                  placeholder="e.g. Is it warm enough for winter outdoor use?"
+                  value={question}
+                  onChange={e => setQuestion(e.target.value)}
+                  disabled={querying}
+                  aria-disabled={querying}
+                  autoComplete="off"
+                  aria-describedby={voiceSupported ? 'voice-hint-detail' : undefined}
+                />
+                {voiceSupported && (
+                  <button
+                    type="button"
+                    className={`voice-btn${listening ? ' voice-btn--active' : ''}`}
+                    onClick={startVoice}
+                    aria-label={listening ? 'Stop listening' : `Voice input (${voiceShortcutLabel()})`}
+                    aria-pressed={listening}
+                    disabled={querying}
+                  >
+                    <MicIcon listening={listening} />
+                  </button>
+                )}
+              </div>
+              {voiceSupported && (
+                <p id="voice-hint-detail" className="sr-only">
+                  Press {voiceShortcutLabel()} to activate voice input. Your question will be submitted automatically.
+                </p>
+              )}
             </div>
             <button
               type="submit"
