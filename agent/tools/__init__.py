@@ -16,13 +16,9 @@ from agent.tools.base import (
 )
 
 # Import all tools to register them
-from agent.tools.product_search import SemanticProductSearchTool
 from agent.tools.review_search import SemanticReviewSearchTool
 from agent.tools.knowledge import KnowledgeRetrievalTool
 from agent.tools.visual import VisualSemanticSearchTool
-from agent.tools.discovery import DiscoverySimilarTool
-from agent.tools.facet import FacetInsightsTool
-from agent.tools.recommend import RecommendByExampleTool
 
 __all__ = [
     # Base classes
@@ -36,11 +32,7 @@ __all__ = [
     "get_all_schemas",
     "list_tools",
     # Tool classes
-    "SemanticProductSearchTool",
     "SemanticReviewSearchTool",
     "KnowledgeRetrievalTool",
     "VisualSemanticSearchTool",
-    "DiscoverySimilarTool",
-    "FacetInsightsTool",
-    "RecommendByExampleTool",
 ]

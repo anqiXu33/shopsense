@@ -1,35 +1,53 @@
 #!/bin/bash
-# launch.sh - Launch ShopSense v2
+# launch.sh - Launch ShopSense (FastAPI backend + React frontend)
 
-echo "🛍️  Starting ShopSense v2..."
 echo "================================"
+echo "  ShopSense"
+echo "================================"
+echo ""
 
 # Check Qdrant
-echo "Checking Qdrant connection..."
+echo "Checking Qdrant..."
 if curl -s http://127.0.0.1:6333 > /dev/null; then
-    echo "✓ Qdrant is running"
+    echo "✓ Qdrant running at http://127.0.0.1:6333"
 else
-    echo "✗ Qdrant not found at http://127.0.0.1:6333"
-    echo "Please start Qdrant first:"
-    echo "  docker run -p 6333:6333 qdrant/qdrant"
+    echo "✗ Qdrant not found. Start it with:"
+    echo "    docker run -p 6333:6333 qdrant/qdrant"
     exit 1
 fi
 
-# Check collections
-echo "Checking data collections..."
-python3 -c "
-from qdrant_client import QdrantClient
-c = QdrantClient('http://127.0.0.1:6333')
-cols = [col.name for col in c.get_collections().collections if 'v2' in col.name]
-if len(cols) >= 4:
-    print(f'✓ Found {len(cols)} collections')
-else:
-    print('⚠ Collections not found, running ingest...')
-    import os
-    os.system('python3 scripts/ingest_v2.py')
-" 2>/dev/null
+echo ""
+
+# Start backend
+echo "Starting backend (port 8000)..."
+cd "$(dirname "$0")"
+uvicorn backend.main:app --reload --port 8000 &
+BACKEND_PID=$!
+
+# Wait for backend to be ready
+for i in {1..10}; do
+    if curl -s http://127.0.0.1:8000/health > /dev/null 2>&1; then
+        break
+    fi
+    sleep 1
+done
+echo "✓ Backend running at http://127.0.0.1:8000"
 
 echo ""
-echo "🚀 Launching Gradio UI..."
+
+# Start frontend
+echo "Starting frontend (port 5173)..."
+cd frontend && npm run dev &
+FRONTEND_PID=$!
+
+echo ""
 echo "================================"
-python3 frontend/app_v2.py
+echo "  Backend:  http://127.0.0.1:8000"
+echo "  Frontend: http://127.0.0.1:5173"
+echo "================================"
+echo ""
+echo "Press Ctrl+C to stop all services"
+
+# Cleanup on exit
+trap "kill $BACKEND_PID $FRONTEND_PID 2>/dev/null; exit" INT TERM
+wait

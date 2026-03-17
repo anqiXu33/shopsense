@@ -12,15 +12,7 @@ load_dotenv()
 QDRANT_URL = os.getenv("QDRANT_URL", "http://127.0.0.1:6333")
 QDRANT_API_KEY = os.getenv("QDRANT_API_KEY") or None
 
-# Collection names (Legacy - 兼容旧代码)
-COLLECTIONS = {
-    "visual": "product_visual_desc",
-    "reviews": "reviews_chunks",
-    "knowledge": "material_knowledge",
-    "sizing": "sizing_guide",
-}
-
-# New Qdrant-First Collections
+# Qdrant Collections
 QDRANT_COLLECTIONS = {
     "products": "products",
     "reviews": "reviews",
@@ -45,15 +37,3 @@ EMBED_MODEL = os.getenv("EMBED_MODEL", "text-embedding-v4")
 # ── Retrieval ────────────────────────────────────────────────────────────────
 TOP_K = 5  # results per Qdrant query
 MAX_CONTEXT_TOKENS = 2000
-
-# Token budget per intent type
-# Format: {intent: {source: fraction_of_remaining_budget}}
-TOKEN_BUDGETS = {
-    "warmth_inquiry": {"knowledge": 0.50, "reviews": 0.40, "sizing": 0.10},
-    "material_sensitivity": {"knowledge": 0.55, "reviews": 0.40, "sizing": 0.05},
-    "size_fitting": {"knowledge": 0.10, "reviews": 0.40, "sizing": 0.50},
-    "appearance_inquiry": {"knowledge": 0.00, "reviews": 0.30, "sizing": 0.00},
-    "review_summary": {"knowledge": 0.00, "reviews": 1.00, "sizing": 0.00},
-    "usage_context": {"knowledge": 0.35, "reviews": 0.55, "sizing": 0.10},
-    "default": {"knowledge": 0.35, "reviews": 0.45, "sizing": 0.20},
-}
