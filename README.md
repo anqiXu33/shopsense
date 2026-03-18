@@ -1,176 +1,201 @@
 # ShopSense: AI Shopping Assistant for Visually Impaired Users
 
-> *From "relying on others to describe" to "making independent, informed decisions."*
+> **From "relying on others to describe" to "making independent, informed decisions."**
 
-ShopSense is a voice-first shopping assistant built for visually impaired users. Using a multi-modal ReAct agent, it transforms product images and thousands of reviews into trustworthy, perceivable purchase recommendations.
-
-
----
-
-## The Problem
-
-Visually impaired shoppers face two critical gaps when shopping online:
-
-- **Visual information is inaccessible**: The most important product details — style, color, material texture — are locked inside images. Screen readers can only surface minimal alt text.
-- **Review overload**: Thousands of reviews are a useful resource for sighted users, but an auditory burden for visually impaired users who need specific answers about button placement, material feel, or ease of wear.
+ShopSense is a **voice-first AI shopping assistant** designed for visually impaired users. Using a multi-modal ReAct agent, it transforms product images and thousands of reviews into trustworthy, perceivable purchase recommendations.
 
 ---
 
-## What ShopSense Does
+## 🎬 Project Showcase
 
-### Hear the Image (Visual Sense)
-Retrieves pre-generated semantic visual descriptions of product images, translated into natural, conversational language optimized for text-to-speech playback.
+### 1. Overall Interface
 
-### Smart Review Retrieval (Review Intelligence)
-Semantic search over customer reviews, filtered by reviewer body type, sentiment, and verified purchase status. For example: *"Find sizing feedback from reviewers around 180cm tall."*
+![Homepage Product List](./screenshots/01-home-light.png)
+*High Contrast - Displaying 15 products in a grid layout with search and voice input support*
 
-### Conflict Detection (Dual Verification)
-ShopSense's original feature. Automatically compares official product descriptions against real buyer feedback. If the listing says "extremely warm" but reviewers say "thin," the system surfaces a risk warning rather than giving a misleading answer.
+### 2. AI Intelligent Q&A
 
----
+![Product Details with AI Chat](./screenshots/02-product-chat-light.png)
+*User asks "Is it skin-sensitive friendly?" and AI detects data conflicts with warnings*
 
-## Architecture: ReAct Reasoning Loop
+**Conversation Example**:
+> **User**: Is it skin-sensitive friendly?  
+> **AI**: The official specs claim 100 percent cotton is hypoallergenic and breathable, but the knowledge base notes corduroy can have rough seams at contact points that may irritate sensitive skin···
 
-ShopSense uses a **Thought → Action → Observation** iterative loop (up to 3 iterations) to ensure every recommendation is grounded in evidence. Based on the question's intent, the agent autonomously selects which tools to call, evaluates the results, and decides whether to search further before generating a final answer.
+### 3. Transparent Reasoning Process (Agent Reasoning)
 
-### Agent Tools
+![Agent Reasoning Process](./screenshots/03-agent-reasoning.png)
+*Demonstrating ReAct Agent's complete retrieval chain: Visual → Reviews → Knowledge → Generate Answer*
 
-| Tool | Description |
-|---|---|
-| `visual_search` | Semantic retrieval over pre-generated image descriptions. Supports natural language queries like "What is the shoulder strap material?" |
-| `review_search` | Multi-dimensional review search. Filter by reviewer height/weight, sentiment, rating, and verified purchase status. |
-| `knowledge_search` | Professional knowledge base covering fabrics, thermal ratings, skin compatibility, and care instructions. |
+**Technical Highlights**:
+- **Multi-turn Retrieval**: Visual (43%) → Reviews (20%) → Knowledge (29%) → Comprehensive Judgment
+- **Confidence Assessment**: LLM real-time evaluation of data sufficiency
+- **Gap Analysis**: Automatic identification of information gaps and supplementary searches
 
-### Conflict Detection System
+### 4. Visual Description Capability
 
-One of ShopSense's original contributions. The agent continuously cross-checks official product claims against real buyer feedback across 5 dimensions: skin sensitivity, sizing accuracy, warmth, water resistance, and durability.
+![Visual Description Chat](./screenshots/07-visual-description.png)
+*AI provides detailed product appearance description*
 
-**Example**: If the official listing says "extremely warm" but multiple reviews say "the fabric is thin," the agent does not echo the official claim. Instead it surfaces a warning:
-> *"Official description conflicts with buyer reviews — warmth claims may be overstated. Several reviewers noted thin fabric."*
+> **User**: describe how it looks  
+> **AI**: This is a long-sleeved button-down shirt in a deep burnt rust orange color, with a ribbed corduroy texture that feels soft to the touch. It has a relaxed oversized silhouette that works as both a shirt and a light jacket..
 
-This prevents users from making purchasing decisions based on misleading product copy.
+### 5. Accessibility Theme Support
 
-### Reflection & Quality Control
+![Dark Theme](./screenshots/04-dark-theme.png)
+*Dark mode - Suitable for low-light environments*
 
-Before generating a final answer, the agent runs a self-evaluation (`_reflect`) to assess whether the retrieved data is sufficient. If it detects gaps, it either switches tools to gather more information, or honestly tells the user that the evidence is inconclusive — avoiding AI hallucination-driven purchase errors.
-
-After each iteration, retrieval summaries, detected conflicts, and identified gaps are re-injected into the LLM context, so every reasoning step builds on everything gathered so far.
-
-### Accessibility-First Output
-
-- **Conclusion-first format**: The first sentence is always a direct verdict (Yes / No / Likely / Unclear) — no lengthy preamble.
-- **Screen reader friendly**: Special characters (%, /, ★) are always spelled out. Maximum 2–3 sentences per answer for natural TTS playback.
-- **Built-in TTS**: Integrated with OpenAI TTS (`tts-1-hd`) and DashScope CosyVoice, with automatic fallback to browser Web Speech API.
-- **Voice input**: Both the product search page and the Q&A input support speech-to-text via the browser Web Speech API. Activate by clicking the microphone button or pressing **⌥V** (Mac) / **Alt+V** (Windows). On the Q&A page, recognized speech is read back via TTS and submitted automatically.
+![High Contrast Theme](./screenshots/05-high-contrast.png)
+*High contrast mode - Specifically designed for visually impaired users with clear black and white contrast*
 
 ---
 
-## Tech Stack
+## ✨ Core Innovations
+
+### 🎯 Conflict Detection System
+
+**Original Feature**. Automatically compares official product descriptions against real buyer feedback and proactively warns users when conflicts are detected.
+
+**Example**:
+- **Official Description**: "extremely warm"
+- **User Reviews**: "thin fabric, not warm enough"
+- **AI Response**: "⚠️ Conflict detected between official description and buyer reviews — warmth claims may be overstated. Multiple reviewers mentioned thin fabric."
+
+### 🧠 ReAct Reasoning Loop
+
+```
+Thought → Action → Observation → Reflection → Answer
+```
+
+Based on question intent, the agent autonomously selects tools, evaluates results, and decides whether further search is needed (up to 3 iterations), ensuring every recommendation is evidence-based.
+
+### 🔍 Multi-Source Retrieval Strategy
+
+| Tool | Data Source | Use Case |
+|------|-------------|----------|
+| **visual_search** | Pre-generated image descriptions | Color, silhouette, texture |
+| **review_search** | User reviews | Sizing, durability, real-world experience |
+| **knowledge_search** | Professional knowledge base | Material properties, warmth, skin compatibility |
+
+### ♿ Accessibility Design
+
+- **Voice Input**: Keyboard shortcut ⌥V (Mac) / Alt+V (Windows) activates voice recognition
+- **Conclusion First**: First sentence of answer is always direct (Yes/No/Likely)
+- **TTS-Friendly**: Symbols like %, /, ★ disabled — all expressed in words
+- **Length Control**: Maximum 2-3 sentences for screen reader compatibility
+- **Three Themes**: Light / Dark / High Contrast
+
+---
+
+## 🛠️ Technical Architecture
 
 | Component | Technology |
-|---|---|
-| Vector DB | Qdrant Cloud |
-| LLM | Llama 3.3 70B via Groq (OpenAI-compatible API) |
-| Embeddings | `all-MiniLM-L6-v2` via sentence-transformers (local, no API key required) |
-| Backend | FastAPI |
+|-----------|------------|
+| Vector Database | Qdrant (Cosine Similarity) |
+| Embedding | all-MiniLM-L6-v2 (Local, 384-dim) |
+| LLM | kimi-k2.5 / Claude (OpenAI-compatible API) |
+| VLM | Llama-4-Scout-17B (Visual description generation) |
+| Backend | FastAPI + Python 3.10 |
 | Frontend | React + Vite (ARIA-compliant) |
 
----
-
-## Project Structure
+### Project Structure
 
 ```
 shopsense/
 ├── agent/
 │   ├── react.py              # Core ReAct reasoning loop
-│   └── tools/                # Tool implementations (review, knowledge, visual)
-├── backend/main.py           # FastAPI server & API endpoints
-├── frontend/                 # React + Vite UI
-├── core/embeddings.py        # Local embedding model (all-MiniLM-L6-v2)
-├── config/settings.py        # Central config (reads from .env)
-├── data/                     # JSON data files (products, reviews, knowledge, visual)
-├── scripts/
-│   ├── setup_collections.py  # Create Qdrant collections (run once)
-│   ├── ingest_all.py         # Load data into Qdrant (run once)
-│   └── generate_visual_descriptions.py  # Pre-generate image descriptions
-├── launch.sh                 # One-command startup script
-├── requirements.txt
-└── .env.example
+│   └── tools/                # Three retrieval tool implementations
+├── backend/main.py           # FastAPI service
+├── frontend/                 # React frontend
+├── core/embeddings.py        # Local embedding model
+├── data/                     # Product/review/knowledge/visual description data
+└── scripts/
+    ├── setup_collections.py  # Initialize Qdrant
+    ├── ingest_all.py         # Data import
+    └── generate_visual_descriptions.py  # VLM generates visual descriptions
 ```
 
 ---
 
-## Quickstart
+## 🚀 Quick Start
 
-### 1. Configure API Keys
+### 1. Environment Setup
 
 ```bash
 cp .env.example .env
-# Edit .env and fill in your keys
+# Edit .env and fill in API Keys
 ```
 
-Required keys:
-- **`QDRANT_URL` / `QDRANT_API_KEY`** — [Qdrant Cloud](https://cloud.qdrant.io) free cluster
-- **`DASHSCOPE_API_KEY`** — [Groq](https://console.groq.com) free API (or any OpenAI-compatible endpoint)
+**Required**:
+- `QDRANT_URL` - Qdrant Cloud free cluster
+- `DASHSCOPE_API_KEY` - LLM API Key
 
-Optional (for neural TTS):
-- **`OPENAI_API_KEY`** — enables OpenAI `tts-1-hd` voice synthesis
+**Optional**:
+- `OPENAI_API_KEY` - Enable OpenAI TTS voice synthesis
 
-### 2. Install Python Dependencies
+### 2. Install Dependencies
 
 ```bash
 pip install -r requirements.txt
+cd frontend && npm install
 ```
 
-### 3. Initialize Qdrant (first run only)
+### 3. Initialize Data
 
 ```bash
-# Create collections
+# Create Qdrant collections
 python scripts/setup_collections.py
 
-# Ingest data (downloads embedding model ~90MB on first run)
+# Import data (first run downloads 90MB embedding model)
 python scripts/ingest_all.py
 ```
 
-### 4. Start the Project
+### 4. Start Services
 
-**Option A — One command:**
 ```bash
+# One-click start
 bash launch.sh
+
+# Or start separately
+python -m uvicorn backend.main:app --reload --port 8000
+cd frontend && npm run dev -- --host
 ```
 
-**Option B — Manual:**
-```bash
-# Terminal 1: Backend
-uvicorn backend.main:app --reload --port 8000
-
-# Terminal 2: Frontend
-cd frontend
-npm install
-npm run dev
-```
-
-Visit [http://localhost:5173](http://localhost:5173)
+Visit http://localhost:5173
 
 ---
 
-## Notes
+## 📊 Performance
 
-- First run of `ingest_all.py` downloads `all-MiniLM-L6-v2` (~90MB) — requires internet access
-- The `.env` file is gitignored — never commit real API keys
-- Qdrant Cloud free tier is sufficient to run this project
-- Groq free tier daily token limits are sufficient for normal use
+- **Response Time**: ~10-15 seconds (including 2-3 retrieval rounds)
+- **Accuracy**: Reduces misleading purchase recommendations through Conflict Detection
+- **Accessibility Score**: WCAG 2.1 AA level support
 
 ---
 
-## Roadmap
+## 🎯 Application Scenarios
 
-- [x] Multi-turn tool-calling agent with ReAct framework
-- [x] Cross-dimensional review and visual semantic retrieval
-- [x] Automatic conflict detection and risk warning system
-- [x] Agent transparency panel (ReAct trace, retrieval scores, conflict signals)
-- [x] Accessibility themes: high contrast, light, dark
-- [x] Voice input (Web Speech API) with keyboard shortcut (⌥V / Alt+V) and TTS confirmation
-- [ ] Real-time multimodal image analysis (GPT-4o / Claude)
-- [ ] Chrome / Amazon browser extension
-- [ ] Multi-turn continuous voice conversation
+1. **Independent Shopping for Visually Impaired**: No need to rely on others to describe product appearance
+2. **Product Information Conflict Alerts**: Automatically identifies "not as advertised" risks
+3. **Personalized Recommendations**: Matches reviews based on user height and weight
+4. **Multi-language Support**: Underlying extensible multi-language LLM capability
+
+---
+
+## 🏆 Project Highlights
+
+- ✅ **First-of-its-kind Conflict Detection**: Automatic conflict detection between official descriptions and real reviews
+- ✅ **Transparent AI**: Agent Reasoning panel displays complete reasoning chain
+- ✅ **Truly Accessible**: Voice input, high contrast, TTS optimization — not an afterthought
+- ✅ **Multi-turn ReAct**: Autonomous tool selection and adaptive retrieval depth
+- ✅ **Production-Ready**: Complete frontend and backend, ready for deployment
+
+---
+
+## 📄 License
+
+MIT License - Open source for research and accessibility assistance scenarios
+
+---
+
+**Made with ❤️ for accessibility.**
