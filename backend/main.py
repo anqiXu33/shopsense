@@ -209,54 +209,7 @@ async def tts_image(asin: str):
     if not visual_points:
         return {"answer": "No visual description available for this product."}
 
-    description = visual_points[0].payload["text"]
-
-    product_context = ""
-    if product_points:
-        p = product_points[0].payload
-        attrs = p.get("attributes", {})
-        product_context = (
-            f"Product name: {p['name']}\n"
-            f"Brand: {p['brand']}\n"
-            f"Price: CHF {p['price']}\n"
-            f"Material: {attrs.get('material', 'not specified')}\n"
-            f"Color: {attrs.get('color', 'not specified')}\n"
-        )
-
-    base_url = os.getenv("DASHSCOPE_BASE_URL", "https://api.groq.com/openai/v1")
-    api_key = os.getenv("DASHSCOPE_API_KEY") or os.getenv("HF_API_KEY")
-    model = os.getenv("TEXT_MODEL", "llama-3.3-70b-versatile")
-
-    user_prompt = (
-        f"{product_context}\n"
-        f"What the image actually shows:\n{description}\n\n"
-        "Introduce this product by name and brand. Then describe its appearance based on "
-        "what is actually visible in the image — color, shape, texture, closures, and any notable details. "
-        "If the image color differs from the listed color, describe what you see in the image. "
-        "Write in a warm, natural tone for someone who cannot see the image."
-    )
-
-    try:
-        resp = req_lib.post(
-            f"{base_url}/chat/completions",
-            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
-            json={
-                "model": model,
-                "messages": [
-                    {"role": "system", "content": "You are ShopSense, an accessibility assistant that describes product images for visually impaired shoppers. Always base your description on what the image actually shows, not on the listed product attributes. Be clear, warm, and concise (under 80 words)."},
-                    {"role": "user", "content": user_prompt},
-                ],
-                "max_tokens": 300,
-                "temperature": 0.4,
-            },
-            timeout=30,
-        )
-        resp.raise_for_status()
-        answer = resp.json()["choices"][0]["message"]["content"].strip()
-    except Exception:
-        answer = description
-
-    return {"answer": answer}
+    return {"answer": visual_points[0].payload["text"]}
 
 
 @app.get("/api/tts/speech")

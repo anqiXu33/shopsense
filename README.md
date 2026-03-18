@@ -8,14 +8,16 @@ ShopSense is a **voice-first AI shopping assistant** designed for visually impai
 
 ## 🎬 Project Showcase
 
-### 1. Overall Interface
+### 1. Homepage
 
-![Homepage Product List](./screenshots/01-home-light.png)
-*High Contrast - Displaying 15 products in a grid layout with search and voice input support*
+<p align="center"><img src="./screenshots/01-home-light.png" width="600" alt="Homepage Product List"></p>
+
+*High Contrast - Displaying products in a grid layout with search and voice input support*
 
 ### 2. AI Intelligent Q&A
 
-![Product Details with AI Chat](./screenshots/02-product-chat-light.png)
+<p align="center"><img src="./screenshots/02-product-chat-light.png" width="600" alt="Product Details with AI Chat"></p>
+
 *User asks "Is it skin-sensitive friendly?" and AI detects data conflicts with warnings*
 
 **Conversation Example**:
@@ -24,7 +26,8 @@ ShopSense is a **voice-first AI shopping assistant** designed for visually impai
 
 ### 3. Transparent Reasoning Process (Agent Reasoning)
 
-![Agent Reasoning Process](./screenshots/03-agent-reasoning.png)
+<p align="center"><img src="./screenshots/03-agent-reasoning.png" width="600" alt="Agent Reasoning Process"></p>
+
 *Demonstrating ReAct Agent's complete retrieval chain: Visual → Reviews → Knowledge → Generate Answer*
 
 **Technical Highlights**:
@@ -34,7 +37,8 @@ ShopSense is a **voice-first AI shopping assistant** designed for visually impai
 
 ### 4. Visual Description Capability
 
-![Visual Description Chat](./screenshots/07-visual-description.png)
+<p align="center"><img src="./screenshots/07-visual-description.png" width="600" alt="Visual Description Chat"></p>
+
 *AI provides detailed product appearance description*
 
 > **User**: describe how it looks  
@@ -42,10 +46,12 @@ ShopSense is a **voice-first AI shopping assistant** designed for visually impai
 
 ### 5. Accessibility Theme Support
 
-![Dark Theme](./screenshots/04-dark-theme.png)
+<p align="center"><img src="./screenshots/04-dark-theme.png" width="600" alt="Dark Theme"></p>
+
 *Dark mode - Suitable for low-light environments*
 
-![High Contrast Theme](./screenshots/05-high-contrast.png)
+<p align="center"><img src="./screenshots/05-high-contrast.png" width="600" alt="High Contrast Theme"></p>
+
 *High contrast mode - Specifically designed for visually impaired users with clear black and white contrast*
 
 ---

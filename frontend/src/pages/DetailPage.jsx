@@ -439,11 +439,7 @@ export default function DetailPage() {
   async function handleImageTts() {
     if (speaking) { stopSpeaking(); return }
     try {
-      const res = await fetch(`${API_BASE}/api/query`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ asin, question: 'describe image' }),
-      })
+      const res = await fetch(`${API_BASE}/api/tts?asin=${asin}`)
       const data = await res.json()
       if (mountedRef.current) speakText(data.answer, 'image')
     } catch {

@@ -246,6 +246,7 @@ async def _reflect(
                 ],
                 "max_tokens": 100,
                 "temperature": 0.0,
+                "enable_thinking": False,
             },
             timeout=15,
         )
@@ -474,7 +475,7 @@ async def react_loop(
     product: dict,
     history: list,
     user_context,
-    max_iter: int = 3,
+    max_iter: int = 2,
 ) -> tuple[str, list, dict]:
     """
     ReAct loop: Think → Act (search) → Observe → repeat until confident or max_iter.
@@ -509,6 +510,7 @@ async def react_loop(
                     "tool_choice": tool_choice,
                     "max_tokens": 400,
                     "temperature": 0.3,
+                    "enable_thinking": False,
                 },
                 timeout=30,
             )
@@ -574,34 +576,20 @@ async def react_loop(
 
         trace.append({"iteration": iteration + 1, "actions": iter_actions, "observations": iter_observations})
 
-        # ── Context Engineering: re-inject retrieval summary + conflict signal + reflection ──
-        # Only inject if there's another iteration ahead (otherwise wasteful)
+        # ── Context Engineering: re-inject retrieval summary + conflict signal ──
         if iteration < max_iter - 1:
             context_notes = []
 
-            # 1. Retrieval summary — tells LLM what's covered and what's missing
             summary = _build_context_summary(trace)
             if summary:
                 context_notes.append(summary)
 
-            # 2. Conflict signal — re-inject contradiction into LLM reasoning
             conflict = _detect_conflicts(retrieved["knowledge"], retrieved["reviews"])
             if conflict["has_conflict"]:
                 context_notes.append(
                     f"Conflict detected: {conflict['details']} "
                     "Acknowledge this conflict explicitly in your answer."
                 )
-
-            # 3. Reflection — LLM evaluates retrieval quality
-            reflection = await _reflect(question, retrieved, trace, base_url, api_key, model)
-            trace[-1]["reflection"] = reflection
-            if reflection["confidence"] in ("medium", "low") or reflection["next_action"] == "search_more":
-                refl_note = f"[Reflection] Confidence in current data: {reflection['confidence']}."
-                if reflection["gaps"] and reflection["gaps"].lower() not in ("none", "null"):
-                    refl_note += f" Gap: {reflection['gaps']}."
-                if reflection["next_action"] == "search_more":
-                    refl_note += " Consider searching for more information."
-                context_notes.append(refl_note)
 
             if context_notes:
                 injection = " ".join(context_notes)
@@ -616,7 +604,7 @@ async def react_loop(
                 req_lib.post,
                 f"{base_url}/chat/completions",
                 headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
-                json={"model": model, "messages": messages, "max_tokens": 200, "temperature": 0.3},
+                json={"model": model, "messages": messages, "max_tokens": 200, "temperature": 0.3, "enable_thinking": False},
                 timeout=20,
             )
             resp.raise_for_status()
