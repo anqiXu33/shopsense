@@ -475,7 +475,7 @@ async def react_loop(
     product: dict,
     history: list,
     user_context,
-    max_iter: int = 2,
+    max_iter: int = 3,
 ) -> tuple[str, list, dict]:
     """
     ReAct loop: Think → Act (search) → Observe → repeat until confident or max_iter.
@@ -576,8 +576,21 @@ async def react_loop(
 
         trace.append({"iteration": iteration + 1, "actions": iter_actions, "observations": iter_observations})
 
-        # ── Context Engineering: re-inject retrieval summary + conflict signal ──
+        # ── Retrieval Reflection + Context Engineering ──
+        # After each round (except the last) an LLM evaluates whether the data
+        # retrieved so far is sufficient, then we re-inject a directive that
+        # steers the next step: answer now, or fill a specific gap.
         if iteration < max_iter - 1:
+            reflection = await _reflect(
+                question=question,
+                retrieved=retrieved,
+                trace=trace,
+                base_url=base_url,
+                api_key=api_key,
+                model=model,
+            )
+            trace[-1]["reflection"] = reflection
+
             context_notes = []
 
             summary = _build_context_summary(trace)
@@ -589,6 +602,19 @@ async def react_loop(
                 context_notes.append(
                     f"Conflict detected: {conflict['details']} "
                     "Acknowledge this conflict explicitly in your answer."
+                )
+
+            # Reflection drives the next move: search more vs. answer now.
+            if reflection.get("next_action") == "search_more" and not reflection.get("sufficient"):
+                gap = reflection.get("gaps", "none")
+                context_notes.append(
+                    f"Retrieval is incomplete (confidence: {reflection.get('confidence', 'low')}). "
+                    f"Missing: {gap}. Use a different search tool to fill this gap before answering."
+                )
+            else:
+                context_notes.append(
+                    f"Retrieved data is sufficient (confidence: {reflection.get('confidence', 'medium')}). "
+                    "Provide your final answer now without searching again."
                 )
 
             if context_notes:

@@ -2,7 +2,7 @@
 
 > **From "relying on others to describe" to "making independent, informed decisions."**
 
-ShopSense is a **voice-first AI shopping assistant** designed for visually impaired users. Using a multi-modal ReAct agent, it transforms product images and thousands of reviews into trustworthy, perceivable purchase recommendations.
+ShopSense is a **voice-first AI shopping assistant** designed for visually impaired users. A ReAct agent retrieves over three sources — customer reviews, an expert material/knowledge base, and pre-generated visual descriptions of product images — to turn them into trustworthy, perceivable purchase recommendations. (Image-to-text descriptions are produced offline at data-ingest time and retrieved as text at query time.)
 
 ---
 
@@ -60,7 +60,7 @@ ShopSense is a **voice-first AI shopping assistant** designed for visually impai
 
 ### 🎯 Conflict Detection System
 
-**Original Feature**. Automatically compares official product descriptions against real buyer feedback and proactively warns users when conflicts are detected.
+**Original Feature**. After retrieval, ShopSense compares the official product/knowledge claims against real buyer feedback and proactively warns users when the two disagree. The current implementation is a transparent heuristic: it scans the retrieved text for a curated set of claim/complaint signal pairs across common purchase-decision topics (skin sensitivity, sizing, warmth, water resistance, durability). This keeps the check fast and explainable; extending it to open-ended, LLM-judged conflict detection is a natural next step.
 
 **Example**:
 - **Official Description**: "extremely warm"

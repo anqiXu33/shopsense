@@ -31,8 +31,10 @@ DASHSCOPE_API_KEY = os.getenv("DASHSCOPE_API_KEY")
 TEXT_MODEL = os.getenv("TEXT_MODEL", "qwen3.5-35b-a3b")
 VISION_MODEL = os.getenv("VISION_MODEL", "qwen3.5-35b-a3b")
 
-# Embedding model (DashScope OpenAI-compatible endpoint)
-EMBED_MODEL = os.getenv("EMBED_MODEL", "text-embedding-v4")
+# Embedding model — runs locally via sentence-transformers (see core/embeddings.py).
+# Kept here for reference/metadata only; the model name is hardcoded at load time
+# and must produce VECTOR_SIZE-dimensional vectors.
+EMBED_MODEL = os.getenv("EMBED_MODEL", "all-MiniLM-L6-v2")
 
 # ── Retrieval ────────────────────────────────────────────────────────────────
 TOP_K = 5  # results per Qdrant query
