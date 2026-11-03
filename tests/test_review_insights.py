@@ -5,10 +5,11 @@ Covers the parts of the three review features that decide what a shopper
 hears, with the language model and Qdrant stubbed out (no network, no
 database):
 
-  * highlights — stances are counted into points, the spoken count equals the
-    number of tagged reviews, disagreement is voiced, both languages agree;
-  * review Q&A — the count comes from the reviews the model marked, and "I
-    don't know" is said when it marks none;
+  * highlights — batch proposals are verified review by review, the spoken
+    count equals the number of confirmed reviews, disagreement is voiced,
+    both languages agree;
+  * review Q&A — the count comes from per-review checks, and "I don't know"
+    is said when no review is confirmed;
   * cross-product search — ranking order is kept and explanations line up;
   * eval — the number parser reads exactly what the renderer writes, and the
     retrieval metrics are computed correctly.
@@ -76,21 +77,40 @@ def test_spoken_counts_equal_tagged_reviews_in_both_languages():
     assert CN.spoken_point_numbers(en["points"][0]["speech"], "en") == (30, 3, 2)
 
 
-def test_tagging_runs_in_batches_and_keeps_every_review(monkeypatch):
+def test_proposals_run_in_batches_and_counts_come_from_per_review_checks(monkeypatch):
     seen = []
 
     def fake_chat_json(messages, schema, **kw):
         keys = list(schema["properties"])
         seen.append(keys)
-        return {k: ["comfortable", "comfortable"] for k in keys}
+        return {k: ["comfortable", "comfortable"] for k in keys}  # proposes it for every review
+
+    confirmed = {f"A1-{i:02d}" for i in range(1, 8)}  # but only 7 reviews really say it
+    checks = []
+
+    def fake_review_says(review, task):
+        checks.append((review["review_id"], task))
+        return review["review_id"] in confirmed
 
     monkeypatch.setattr(RI, "chat_json", fake_chat_json)
+    monkeypatch.setattr(RI, "review_says", fake_review_says)
     h = RI.tag_reviews(PRODUCT, _reviews("A1", 25))
 
-    assert [len(k) for k in seen] == [10, 10, 5]
-    assert len(h["tags"]) == 25
-    assert h["tags"]["A1-25"] == ["comfortable"]  # duplicates collapse
-    assert len(h["points"][0]["review_ids"]) == 25
+    assert [len(k) for k in seen] == [10, 10, 5]           # proposals: 3 batch calls
+    assert h["proposed"]["A1-25"] == ["comfortable"]        # duplicates collapse
+    assert len(checks) == 25                                # then one check per review
+    assert all("comfortable to wear" in task for _, task in checks)
+    assert h["checked"]["comfortable"] == sorted(confirmed)
+    assert len(h["points"][0]["review_ids"]) == 7           # the count is the verified one
+    assert h["tags"]["A1-25"] == []
+
+
+def test_a_stance_nobody_confirms_is_not_spoken(monkeypatch):
+    monkeypatch.setattr(RI, "chat_json", lambda m, schema, **kw: {k: ["runs_small"] for k in schema["properties"]})
+    monkeypatch.setattr(RI, "review_says", lambda review, task: False)
+    h = RI.tag_reviews(PRODUCT, _reviews("A1", 12))
+    assert h["checked"] == {"runs_small": []}
+    assert h["points"] == []
 
 
 def test_tag_schema_only_allows_known_stances(monkeypatch):
@@ -120,34 +140,42 @@ def _stub_search(monkeypatch, hits):
     monkeypatch.setattr(RI, "to_english", lambda text: text)
 
 
-def test_answer_count_is_the_number_of_marked_reviews(monkeypatch):
-    hits = _reviews("A1", 4)
-    _stub_search(monkeypatch, hits)
-    monkeypatch.setattr(RI, "chat_json", lambda m, schema, **kw: {
-        "1": True, "2": False, "3": True, "4": False, "answer": "Several say it runs narrow.",
-    })
+def _stub_checks(monkeypatch, yes_ids, answer):
+    monkeypatch.setattr(RI, "review_says", lambda review, task: review["review_id"] in yes_ids)
+    calls = []
+
+    def fake_chat_json(messages, schema, **kw):
+        calls.append(messages[-1]["content"])
+        return {"answer": answer}
+
+    monkeypatch.setattr(RI, "chat_json", fake_chat_json)
+    return calls
+
+
+def test_answer_count_is_the_number_of_confirmed_reviews(monkeypatch):
+    _stub_search(monkeypatch, _reviews("A1", 4))
+    calls = _stub_checks(monkeypatch, {"A1-01", "A1-03"}, "Several say it runs narrow.")
     out = RI.answer_question(PRODUCT, "Is it narrow?", "en")
     assert out["count"] == 2
     assert out["answer"] == "Several say it runs narrow. 2 of 30 reviews mention this."
     assert [e["review_id"] for e in out["evidence"]] == ["A1-01", "A1-03"]
+    assert "text 2" not in calls[0]  # the answer is written from confirmed reviews only
     assert CN.spoken_answer_numbers(out["answer"], "en") == (30, 2)
 
 
-def test_no_marked_review_means_i_dont_know(monkeypatch):
+def test_no_confirmed_review_means_i_dont_know(monkeypatch):
     _stub_search(monkeypatch, _reviews("A1", 3))
-    monkeypatch.setattr(RI, "chat_json", lambda m, schema, **kw: {
-        "1": False, "2": False, "3": False, "answer": "Probably waterproof.",
-    })
+    calls = _stub_checks(monkeypatch, set(), "Probably waterproof.")
     out = RI.answer_question(PRODUCT, "防水吗？", "zh")
     assert out["known"] is False
     assert out["answer"] == "这款鞋的 30 条评论里没有提到这一点，我不知道。"
-    assert "Probably" not in out["answer"]  # the model's guess is discarded
+    assert calls == []  # no answer is generated at all
     assert CN.spoken_answer_numbers(out["answer"], "zh") == (30, 0)
 
 
 def test_chinese_answer_carries_the_chinese_count(monkeypatch):
     _stub_search(monkeypatch, _reviews("A1", 2))
-    monkeypatch.setattr(RI, "chat_json", lambda m, schema, **kw: {"1": True, "2": True, "answer": "有人说偏窄。"})
+    _stub_checks(monkeypatch, {"A1-01", "A1-02"}, "有人说偏窄。")
     out = RI.answer_question(PRODUCT, "有没有人说偏窄？", "zh")
     assert out["answer"] == "有人说偏窄。（30 条评论里有 2 条提到）"
 
@@ -210,3 +238,18 @@ def test_bm25_needs_the_exact_word():
         {"asin": "B", "title": "", "text": "plenty of room for my EE width"},
     ]
     assert BM25(reviews).rank_products("wide feet", 5) == ["A"]
+
+
+def test_judge_agreement_precision_and_recall():
+    from eval.judge_metrics import score as judge_score
+    pairs = [
+        {"pair": 1, "judge": True, "generator": True},
+        {"pair": 2, "judge": True, "generator": None},   # generator never checked this point
+        {"pair": 3, "judge": False, "generator": True},
+        {"pair": 4, "judge": False, "generator": False},
+    ]
+    human = {1: True, 2: False, 3: True, 4: False}
+    j = judge_score(pairs, human, "judge")
+    assert j == {"pairs": 4, "agreement_on_sample": 0.5, "precision": 0.5, "recall": 0.5}
+    g = judge_score(pairs, human, "generator")
+    assert g == {"pairs": 3, "agreement_on_sample": 1.0, "precision": 1.0, "recall": 1.0}

@@ -38,16 +38,24 @@ the switch.
 
 Every count a shopper hears is computed by code, never written by the model:
 
-- **Highlights.** The model labels every review with stances from a fixed
-  list (`runs_small`, `true_to_size`, `narrow`, `comfortable`, …) under a
-  strict JSON schema, 10 reviews per call, so it cannot invent labels.
-  Code counts the labels, picks the 3 most discussed aspects, and builds the
-  sentence from bilingual templates. When another stance on the same aspect
-  has at least 2 reviews, it is read out too.
-- **Q&A.** The model marks each retrieved review true or false for "does
-  this answer the question". The spoken count is the number marked true.
-  When none is marked, the answer is a fixed "the reviews don't mention
-  this" sentence, and the model's own text is discarded.
+- **Highlights, in two steps.**
+  1. *Propose.* The model reads 10 reviews at a time and suggests which
+     stances from a fixed list (`runs_small`, `true_to_size`, `narrow`,
+     `comfortable`, …) each review takes. A strict JSON schema means it
+     cannot invent labels. The most common suggestions become candidate
+     points.
+  2. *Verify.* Every candidate is then checked against every review of
+     the product **one review at a time**: one call, one review, one
+     yes/no question ("does this review clearly say the shoe runs small?").
+
+  Code counts the yes answers, picks the 3 most discussed aspects, and
+  builds the sentence from bilingual templates. When another stance on the
+  same aspect has at least 2 confirmed reviews, it is read out too.
+- **Q&A.** Each of the 10 retrieved reviews gets its own yes/no call: does
+  it answer the question? The spoken count is the number of yes answers,
+  and the answer is written from those reviews only. When there are none,
+  the answer is a fixed "the reviews don't mention this" sentence and no
+  answer is generated.
 - **Search.** The ranking comes from Qdrant; the model only explains it,
   and is told to say so when the quoted reviews show a product does *not*
   fit.
@@ -176,7 +184,7 @@ checked against the API before use.
 
 | Step | Wall clock | Tokens in / out | Cost |
 |---|---|---|---|
-| Highlights, 300 products (900 calls, 8 in parallel) | 7 min | 1.55 M / 0.23 M | $0.27 |
+| Highlights, 300 products: 900 proposal calls + 59,010 per-review checks | 64 min | 10.57 M / 1.69 M | $1.90 |
 | Appearance descriptions, 300 photos | 2 min | 0.10 M / 0.04 M | $0.03 |
 
 ## Accessibility (WCAG 2.1 AA)
@@ -245,9 +253,12 @@ python eval/retrieval_metrics.py
 
 [eval/check_numbers.py](eval/check_numbers.py) parses the numbers from the
 text a shopper hears (Chinese and English) and compares them with the
-reviews themselves. A judge model reads **each review on its own** and
-answers yes or no: does this review make the claim, or answer the
-question? The true count is the number of yes answers.
+reviews themselves. A **judge model** reads each review on its own and
+answers yes or no: does this review make the claim, or answer the question?
+The true count is the number of yes answers.
+
+The judge is **`gpt-5.4-mini`**, a different model from the generator
+(`gpt-6-luna`), set with `JUDGE_MODEL` in `.env`.
 
 - Highlights: 30 products sampled with a fixed seed, every count spoken,
   including counter-views.
@@ -256,45 +267,81 @@ question? The true count is the number of yes answers.
   ("does it run small?") with ones reviews rarely cover ("is it
   waterproof?").
 
-**Results** (generator and judge both `gpt-6-luna`; 5,475 judge calls,
-16 min, $0.16; full per-claim detail in
-[eval/results/number_check.json](eval/results/number_check.json)):
+**Before and after per-review verification**, both scored by the same
+`gpt-5.4-mini` judge.
 
-| | Highlights | Review Q&A |
-|---|---|---|
-| Spoken counts checked | 151 | 30 answers |
-| Spoken total *N* correct ("of 30 reviews") | 100% | 100% |
-| Spoken count **exactly** equals the true count | **32.5%** | **63.3%** |
-| Off by at most 1 review | 70.9% | 90.0% |
-| Off by at most 1 review or 20% | 76.8% | – |
-| Mean absolute error (reviews) | 1.17 | 0.47 |
-| Counted reviews the judge confirms (precision) | 86.2% | 55.3% |
-| Confirmed reviews that were counted (recall) | 92.8% | 63.4% |
-| "I don't know" answers that were right | – | 13 of 14 |
+- **Before:** the batch-of-10 labels were counted directly.
+- **After:** every count comes from one-review-at-a-time checks (see
+  [Why the numbers can be trusted](#why-the-numbers-can-be-trusted)).
+
+| | Highlights before | Highlights after | Q&A before | Q&A after |
+|---|---|---|---|---|
+| Spoken counts checked | 151 | 138 | 30 | 30 |
+| Spoken total *N* correct ("of 30 reviews") | 100% | 100% | 100% | 100% |
+| Spoken count **exactly** equals the true count | 33.8% | **43.5%** | 53.3% | **60.0%** |
+| Off by at most 1 review | 74.8% | **82.6%** | 86.7% | 83.3% |
+| Off by at most 1 review or 20% | 80.8% | **89.9%** | – | – |
+| Mean absolute error (reviews) | 1.09 | **0.78** | 0.73 | **0.70** |
+| Counted reviews the judge confirms (precision) | 89.3% | **96.3%** | 55.3% | **63.9%** |
+| Confirmed reviews that were counted (recall) | 90.2% | 91.3% | 60.5% | 53.5% |
+| "I don't know" answers that were right | – | – | 11 of 12 | 14 of 16 |
 
 How to read it:
 
-- **Highlights tend to over-count slightly** (mean spoken count 7.6
-  against 7.1 true; 72 claims over, 30 under, 49 exact). Clear stances
-  are reliable (`comfortable`: 92% precision, 97% recall; `runs_small`:
-  87% and 100%). Subtle ones are not: `true_to_size` (58% precision),
-  `looks_bad` (38%) and `supportive` (52%) get tagged on reviews that only
-  hint at them. Raising the bar for those stances, or dropping them, is
-  the obvious next step.
-- **Q&A counts are mostly right, but not always for the right reviews.**
-  The count is exact for 63% of answers and within one for 90%. Yet only
-  55% of the reviews counted are confirmed by the judge, so some correct
-  counts come from errors cancelling out. Some disagreements are the judge
-  being stricter than a shopper would be (for "is it good for wide feet?",
-  *"tighter than most shoes, got blisters"* was counted but not confirmed).
-- **"I don't know" is reliable:** 13 of 14 were right. In the one miss
-  ("is it waterproof?" for a boat shoe), the answering review says
-  *"impervious to fresh and salt water"* and was not among the 10
-  retrieved, a retrieval miss rather than a generation error.
-- The Chinese and English highlights speak identical counts (checked on
-  all 151).
+- **Highlights improved on every measure.** The biggest change is
+  precision: a review now counts only after it passes its own check, so
+  almost nothing is counted that the judge rejects (96%, up from 89%).
+  Stances that were over-tagged before are now clean: `true_to_size`
+  precision went from 69% to 100%, `poor_quality` from 73% to 95%. The
+  remaining error goes the other way. The generator is now a little
+  stricter than the judge, so counts run slightly low (mean spoken 7.7
+  against 8.1 true; 21 claims over, 57 under, 60 exact).
+- **Q&A moved less, and not all in one direction.** Precision and exact
+  counts rose; recall and "within one" fell. With 30 questions each
+  answer is 3.3 points, so these shifts are within noise. Recall is capped
+  by retrieval: the checks only see the 10 reviews retrieved out of 30.
+  Both wrong "I don't know" answers were retrieval misses. For "is it
+  waterproof?" on a boat shoe, the answering review says *"impervious to
+  fresh and salt water"* and was not among the 10 retrieved.
+- **Cost.** Verification multiplies the model calls for highlights by about
+  65 (from 900 to 59,910), and the cost from $0.27 to $1.90 for 300
+  products. That is still about $0.006 per product, paid once per product,
+  offline.
+- The Chinese and English highlights speak identical counts.
+- An earlier run, with `gpt-6-luna` as both generator and judge, is kept in
+  [eval/results/number_check.json](eval/results/number_check.json) for
+  reference: highlights 32.5% exact and 70.9% within one; Q&A 63.3% and
+  90.0%.
 
-### 3. Appearance descriptions (30 photos)
+Per-claim detail:
+[number_check_before.json](eval/results/number_check_before.json),
+[number_check_after.json](eval/results/number_check_after.json).
+Cost of the two judge runs: $1.70 and $0.11 (the second reuses cached
+judgments of the same review and claim).
+
+### 3. How good is the judge? (50 hand-labelled pairs)
+
+The number check is only as good as its judge.
+[eval/build_judge_sheet.py](eval/build_judge_sheet.py) draws 50
+(review, highlight point) pairs from the judge's decisions: 25 it said yes
+to and 25 it said no to, with a fixed seed. It exports them to
+[eval/annotation/judge_labels.csv](eval/annotation/judge_labels.csv). The
+sheet does not show any model's verdict. A person labels whether the
+review makes the point, and [eval/judge_metrics.py](eval/judge_metrics.py)
+reports, against those labels:
+
+- the agreement, precision and recall of the judge (`gpt-5.4-mini`);
+- the same for the generator's per-review check (`gpt-6-luna`, which
+  decided all 50 pairs);
+- the same for the earlier `gpt-6-luna` judge (48 of the 50).
+
+Because the sample is half yes and half no while the judge says yes to
+24% of all pairs, the judge's agreement is also reported reweighted to
+that rate.
+
+**Results:** pending manual labelling.
+
+### 4. Appearance descriptions (30 photos)
 
 [eval/build_appearance_sheet.py](eval/build_appearance_sheet.py) samples 30
 products with a fixed seed and exports their descriptions to
@@ -309,11 +356,10 @@ invented details and Chinese–English mismatches.
 
 ### Limitations
 
-- **The judge is a language model, and here the same one.** Judging one
-  review at a time is a different and simpler task than tagging 10 at once,
-  but errors can still correlate. Set `JUDGE_*` to a different model for an
-  independent check, or hand-label a sample of
-  `eval/results/number_check.json`.
+- **The judge is a language model.** It is a different model from the
+  generator, but it asks the same per-review question, so both can share a
+  blind spot. Section 3 measures the judge against human labels; until
+  those are in, the "true count" is the judge's count.
 - **"Exact" is strict.** A count off by one review fails it, which is why
   `within_1` is reported too.
 - **Q&A only sees the 10 retrieved reviews** out of 30. A review that
@@ -337,7 +383,7 @@ pip install -r requirements.txt
 cd frontend && npm install && cd ..
 
 python scripts/build_dataset.py                  # ~2 GB download, cached in data/raw/
-python scripts/build_highlights.py               # ~7 min, ~$0.27 with gpt-6-luna
+python scripts/build_highlights.py               # ~1 h, ~$1.90 with gpt-6-luna
 python scripts/generate_visual_descriptions.py   # ~2 min, ~$0.03
 python scripts/ingest_all.py                     # embeds locally, ~3 min
 

@@ -2,9 +2,11 @@
 
 Precompute the spoken review highlights for every product (feature 1).
 
-Tagging 30 reviews takes three model calls, too slow to run while a blind
-shopper waits on a product page, so highlights are built offline, the way a
-retailer would refresh them when new reviews arrive. Products are processed
+A product takes three batch calls to propose stances and then one call per
+(review, candidate stance) to verify them, about 150 calls in all. That is
+far too slow to run while a blind shopper waits on a product page, so
+highlights are built offline, the way a retailer would refresh them when
+new reviews arrive. Products are processed
 CONCURRENCY at a time. Each result is written to data/shoes/highlights.json
 as soon as it is done, and a rerun skips products already there, so an
 interrupted run picks up where it stopped. Delete the file to rebuild
@@ -32,7 +34,7 @@ from core.llm import usage_summary
 
 SHOES = os.path.join(ROOT_DIR, "data", "shoes")
 OUT = os.path.join(SHOES, "highlights.json")
-CONCURRENCY = 8
+CONCURRENCY = 4  # products at a time; each runs up to 32 per-review checks
 
 
 def main():

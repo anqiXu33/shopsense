@@ -40,9 +40,10 @@ Judgments are cached in eval/results/judgments.json, so an interrupted run
 resumes. Stop the backend first when Qdrant runs in local mode.
 
 Usage:
-    python eval/check_numbers.py
+    python eval/check_numbers.py [--out number_check.json]
 """
 
+import argparse
 import json
 import os
 import random
@@ -244,6 +245,9 @@ def check_qa(products: list, reviews: dict, judge: Judge) -> list:
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--out", default="number_check.json", help="file name in eval/results/")
+    out_name = parser.parse_args().out
     shoes = os.path.join(ROOT_DIR, "data", "shoes")
     products = json.load(open(os.path.join(shoes, "products.json")))
     highlights = json.load(open(os.path.join(shoes, "highlights.json")))
@@ -277,7 +281,7 @@ def main():
         ),
         "qa": qa_summary,
     }
-    with open(os.path.join(RESULTS, "number_check.json"), "w") as f:
+    with open(os.path.join(RESULTS, out_name), "w") as f:
         json.dump({"summary": summary, "highlights": hl, "qa": qa}, f, ensure_ascii=False, indent=1)
     print(json.dumps(summary, ensure_ascii=False, indent=1))
 

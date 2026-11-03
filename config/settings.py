@@ -5,7 +5,7 @@ Central configuration — values come from .env (see .env.example).
 
 import json
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import lru_cache
 
 from dotenv import load_dotenv
@@ -70,7 +70,7 @@ VECTOR_SIZE = int(os.getenv("VECTOR_SIZE", "384"))
 @dataclass(frozen=True)
 class LLMConfig:
     base_url: str
-    api_key: str
+    api_key: str = field(repr=False)  # never printed in logs or tracebacks
     model: str
     extra_body: dict
 

@@ -2,26 +2,31 @@
 
 The three review features of the ShopSense store:
 
-  1. Highlights   tag_reviews() labels every review of a product with the
-                  stances it takes (runs small, comfortable …); the most
-                  common stances become the spoken key points. It runs
-                  offline (scripts/build_highlights.py); render_highlights()
-                  turns the stored result into speech in Chinese or English.
+  1. Highlights   tag_reviews() first lets the model propose, 10 reviews at
+                  a time, which stances (runs small, comfortable …) each
+                  review takes. The most common proposals become candidate
+                  points, and every candidate is then checked against every
+                  review on its own: one call, one review, one yes/no. The
+                  spoken count is the number of yes answers. It runs offline
+                  (scripts/build_highlights.py); render_highlights() turns
+                  the stored result into speech in Chinese or English.
   2. Review Q&A   answer_question() retrieves this product's reviews that
-                  relate to a question and answers only from them.
+                  relate to a question, asks of each one on its own whether
+                  it answers the question, and answers only from those.
   3. Search       search_products() ranks all products by how well their
                   reviews match a need, then explains each pick.
 
 Every count a shopper hears ("12 of 30 reviews mention this") is computed
-here by counting the reviews the model marked, never written by the model
-itself, so the spoken number always equals the evidence behind it. Whether
-those reviews really say what was claimed is what eval/check_numbers.py
-measures.
+here by counting per-review yes answers, never written by the model itself,
+so the spoken number always equals the evidence behind it. Whether those
+reviews really say what was claimed is what eval/check_numbers.py measures,
+with a different model as judge.
 """
 
 import asyncio
 import re
 from collections import Counter
+from concurrent.futures import ThreadPoolExecutor
 from functools import lru_cache
 
 from agent.tools.review_search import SemanticReviewSearchTool
@@ -58,13 +63,18 @@ STANCES = {
     "slippery": ("grip", "the sole is slippery", "is slippery", "鞋底打滑"),
 }
 
-TAG_BATCH = 10         # reviews per tagging call; small batches keep a 7B model accurate
+TAG_BATCH = 10         # reviews per proposal call
 N_POINTS = 3           # key points spoken per product
+N_CANDIDATE_ASPECTS = N_POINTS + 1  # aspects whose stances are verified review by review
 MIN_POINT_REVIEWS = 2  # a stance needs at least this many reviews to be spoken
 QA_TOP_K = 10          # reviews retrieved per question
 SEARCH_TOP_PRODUCTS = 5
 SEARCH_REVIEWS_PER_PRODUCT = 3
 SEARCH_MIN_RATING = 4  # recommendations are argued from satisfied buyers
+
+# Per-review yes/no checks run in parallel; one pool shared by all callers.
+_CHECKS = ThreadPoolExecutor(32)
+_YES_NO = object_schema({"answer": {"type": "string", "enum": ["yes", "no"]}})
 
 
 @lru_cache(maxsize=1)
@@ -79,6 +89,30 @@ def _numbered(reviews: list) -> str:
         f"[{i}] ({r['rating']} stars) {r['title']}. {r['text']}"
         for i, r in enumerate(reviews, start=1)
     )
+
+
+def review_says(review: dict, task: str) -> bool:
+    """Ask about one review, alone: does it say this / answer this? yes or no."""
+    out = chat_json(
+        [{"role": "system", "content": "You check customer reviews carefully and literally. Reply with JSON only."},
+         {"role": "user", "content": (
+             f"Customer review of a shoe ({review['rating']} stars):\n"
+             f"\"{review['title']}. {review['text']}\"\n\n"
+             f"{task}\nAnswer yes or no."
+         )}],
+        schema=_YES_NO,
+    )
+    return out["answer"] == "yes"
+
+
+def reviews_saying(reviews: list, task: str) -> list:
+    """The reviews for which review_says() is yes, checked in parallel."""
+    verdicts = _CHECKS.map(lambda r: review_says(r, task), reviews)
+    return [r for r, yes in zip(reviews, verdicts) if yes]
+
+
+def stance_task(stance: str) -> str:
+    return f"Does this review clearly say that {STANCES[stance][1]}?"
 
 
 # ── 1. Highlights ────────────────────────────────────────────────────────────
@@ -107,18 +141,43 @@ def _tag_batch(product: dict, batch: list) -> list:
 
 
 def tag_reviews(product: dict, reviews: list) -> dict:
-    """Tag every review, then keep the most common stances as key points."""
-    tags = {}
+    """
+    Propose stances in batches, verify the candidates review by review, and
+    keep the most common verified stances as key points.
+
+    Stored: the batch proposals (for inspection only), the verified yes-sets
+    per checked stance, and the points built from the verified tags.
+    """
+    proposed = {}
     for start in range(0, len(reviews), TAG_BATCH):
         batch = reviews[start:start + TAG_BATCH]
         for r, t in zip(batch, _tag_batch(product, batch)):
-            tags[r["review_id"]] = t
-    return {"total": len(reviews), "tags": tags, "points": pick_points(tags)}
+            proposed[r["review_id"]] = t
+
+    candidates = sorted({
+        stance
+        for p in pick_points(proposed, N_CANDIDATE_ASPECTS)
+        for stance in [p["stance"]] + ([p["other"]["stance"]] if p["other"] else [])
+    })
+    checked = {stance: sorted(r["review_id"] for r in reviews_saying(reviews, stance_task(stance)))
+               for stance in candidates}
+
+    verified = {r["review_id"]: [] for r in reviews}
+    for stance, rids in checked.items():
+        for rid in rids:
+            verified[rid].append(stance)
+    return {
+        "total": len(reviews),
+        "proposed": proposed,
+        "checked": checked,
+        "tags": verified,
+        "points": pick_points(verified),
+    }
 
 
-def pick_points(tags: dict) -> list:
+def pick_points(tags: dict, n_points: int = N_POINTS) -> list:
     """
-    One point per aspect, for the N_POINTS aspects most reviews talk about.
+    One point per aspect, for the n_points aspects most reviews talk about.
 
     The point states the stance most of those reviews take; if another stance
     on the same aspect has support too ("runs small" vs "true to size"), it
@@ -145,7 +204,7 @@ def pick_points(tags: dict) -> list:
         if len(ranked) > 1 and len(ranked[1][1]) >= MIN_POINT_REVIEWS:
             other = {"stance": ranked[1][0], "review_ids": sorted(ranked[1][1])}
         points.append({"aspect": aspect, "stance": main, "review_ids": sorted(main_ids), "other": other})
-        if len(points) == N_POINTS:
+        if len(points) == n_points:
             break
     return points
 
@@ -238,28 +297,12 @@ def answer_question(product: dict, question: str, lang: str) -> dict:
     """Answer from this product's reviews only; say so when they are silent."""
     n = product["n_reviews"]
     hits = _search(to_english(question), asin=product["asin"], top_k=QA_TOP_K)["reviews"]
+    evidence = reviews_saying(
+        hits,
+        f"Does this review contain information that directly answers the question "
+        f"\"{question}\"? Sharing a word with the question is not enough.",
+    )
     language = "Chinese" if lang == "zh" else "English"
-    prompt = (
-        f"Product: {product['name']}\n"
-        f"Shopper's question: {question}\n\n"
-        f"Reviews that may be relevant:\n{_numbered(hits)}\n\n"
-        "For each numbered review, decide whether it directly answers the "
-        "question (true) or not (false). A review that only shares a word with "
-        "the question does not count. Then answer the question in "
-        f"{language} in one or two short sentences using only the reviews you "
-        "marked true; mention it if they disagree. Do not mention review "
-        "numbers or counts. If you marked none true, leave the answer empty."
-    )
-    out = chat_json(
-        [{"role": "system", "content": "You answer shoppers' questions strictly from customer reviews. Reply with JSON only."},
-         {"role": "user", "content": prompt}],
-        schema=object_schema({
-            **{str(i): {"type": "boolean"} for i in range(1, len(hits) + 1)},
-            "answer": {"type": "string"},
-        }),
-    )
-    ids = [i for i in range(1, len(hits) + 1) if out[str(i)]]
-    evidence = [hits[i - 1] for i in ids]
     k = len(evidence)
     if k == 0:
         answer = (
@@ -269,6 +312,18 @@ def answer_question(product: dict, question: str, lang: str) -> dict:
         )
     else:
         count = count_phrase(k, n, lang)
+        out = chat_json(
+            [{"role": "system", "content": "You answer shoppers' questions strictly from customer reviews. Reply with JSON only."},
+             {"role": "user", "content": (
+                 f"Product: {product['name']}\n"
+                 f"Shopper's question: {question}\n\n"
+                 f"Reviews that answer it:\n{_numbered(evidence)}\n\n"
+                 f"Answer the question in {language} in one or two short sentences, "
+                 "using only these reviews; say so if they disagree. Do not mention "
+                 "review numbers or counts."
+             )}],
+            schema=object_schema({"answer": {"type": "string"}}),
+        )
         body = out["answer"].strip()
         answer = f"{body}（{count}）" if lang == "zh" else f"{body.rstrip('.')}. {count.capitalize()}."
     return {

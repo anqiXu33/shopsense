@@ -1,0 +1,408 @@
+{
+ "judge_model": "gpt-5.4-mini",
+ "earlier_judge": "gpt-6-luna",
+ "judge_yes_rate": 0.2428,
+ "per_verdict": 25,
+ "pairs": [
+  {
+   "pair": 1,
+   "review_id": "B00UZ2Y92I-30",
+   "stance": "looks_good",
+   "judge": false,
+   "generator": false,
+   "earlier_judge": false
+  },
+  {
+   "pair": 2,
+   "review_id": "B01D3MS79W-24",
+   "stance": "uncomfortable",
+   "judge": true,
+   "generator": true,
+   "earlier_judge": true
+  },
+  {
+   "pair": 3,
+   "review_id": "B003M68UN8-17",
+   "stance": "durable",
+   "judge": true,
+   "generator": true,
+   "earlier_judge": true
+  },
+  {
+   "pair": 4,
+   "review_id": "B01J2RZYXY-14",
+   "stance": "true_to_size",
+   "judge": false,
+   "generator": false,
+   "earlier_judge": false
+  },
+  {
+   "pair": 5,
+   "review_id": "B07BNJ44VJ-28",
+   "stance": "runs_small",
+   "judge": true,
+   "generator": true,
+   "earlier_judge": true
+  },
+  {
+   "pair": 6,
+   "review_id": "B07BNJ44VJ-17",
+   "stance": "uncomfortable",
+   "judge": false,
+   "generator": false,
+   "earlier_judge": false
+  },
+  {
+   "pair": 7,
+   "review_id": "B00UZ2Y92I-15",
+   "stance": "uncomfortable",
+   "judge": true,
+   "generator": true,
+   "earlier_judge": true
+  },
+  {
+   "pair": 8,
+   "review_id": "B00MDKWT1I-06",
+   "stance": "looks_good",
+   "judge": true,
+   "generator": true,
+   "earlier_judge": true
+  },
+  {
+   "pair": 9,
+   "review_id": "B07BZZ33R6-14",
+   "stance": "uncomfortable",
+   "judge": true,
+   "generator": false,
+   "earlier_judge": true
+  },
+  {
+   "pair": 10,
+   "review_id": "B00L4TP3NK-29",
+   "stance": "runs_large",
+   "judge": true,
+   "generator": true,
+   "earlier_judge": null
+  },
+  {
+   "pair": 11,
+   "review_id": "B074PR7GYV-18",
+   "stance": "narrow",
+   "judge": false,
+   "generator": false,
+   "earlier_judge": false
+  },
+  {
+   "pair": 12,
+   "review_id": "B01HF9ZN7I-24",
+   "stance": "runs_small",
+   "judge": true,
+   "generator": true,
+   "earlier_judge": true
+  },
+  {
+   "pair": 13,
+   "review_id": "B07BZZ33R6-28",
+   "stance": "comfortable",
+   "judge": true,
+   "generator": true,
+   "earlier_judge": true
+  },
+  {
+   "pair": 14,
+   "review_id": "B01HF9ZN7I-22",
+   "stance": "runs_small",
+   "judge": true,
+   "generator": true,
+   "earlier_judge": true
+  },
+  {
+   "pair": 15,
+   "review_id": "B00L4TP3NK-03",
+   "stance": "comfortable",
+   "judge": true,
+   "generator": true,
+   "earlier_judge": true
+  },
+  {
+   "pair": 16,
+   "review_id": "B00UZ2Y92I-17",
+   "stance": "comfortable",
+   "judge": true,
+   "generator": true,
+   "earlier_judge": true
+  },
+  {
+   "pair": 17,
+   "review_id": "B01FSIKPNK-11",
+   "stance": "looks_good",
+   "judge": false,
+   "generator": false,
+   "earlier_judge": false
+  },
+  {
+   "pair": 18,
+   "review_id": "B016N3E84G-19",
+   "stance": "comfortable",
+   "judge": true,
+   "generator": true,
+   "earlier_judge": true
+  },
+  {
+   "pair": 19,
+   "review_id": "B000ARJGC6-14",
+   "stance": "comfortable",
+   "judge": true,
+   "generator": true,
+   "earlier_judge": true
+  },
+  {
+   "pair": 20,
+   "review_id": "B000AS7F9G-17",
+   "stance": "comfortable",
+   "judge": true,
+   "generator": true,
+   "earlier_judge": true
+  },
+  {
+   "pair": 21,
+   "review_id": "B07BZZ33R6-30",
+   "stance": "supportive",
+   "judge": true,
+   "generator": true,
+   "earlier_judge": true
+  },
+  {
+   "pair": 22,
+   "review_id": "B002QB1ELK-05",
+   "stance": "runs_small",
+   "judge": false,
+   "generator": false,
+   "earlier_judge": false
+  },
+  {
+   "pair": 23,
+   "review_id": "B00MDKWT1I-29",
+   "stance": "looks_good",
+   "judge": true,
+   "generator": true,
+   "earlier_judge": true
+  },
+  {
+   "pair": 24,
+   "review_id": "B015XJSXEC-20",
+   "stance": "comfortable",
+   "judge": true,
+   "generator": true,
+   "earlier_judge": true
+  },
+  {
+   "pair": 25,
+   "review_id": "B004QMSTGA-29",
+   "stance": "durable",
+   "judge": true,
+   "generator": true,
+   "earlier_judge": true
+  },
+  {
+   "pair": 26,
+   "review_id": "B00UZ2Y92I-08",
+   "stance": "looks_good",
+   "judge": false,
+   "generator": false,
+   "earlier_judge": false
+  },
+  {
+   "pair": 27,
+   "review_id": "B01ND4DEH1-26",
+   "stance": "runs_large",
+   "judge": true,
+   "generator": true,
+   "earlier_judge": true
+  },
+  {
+   "pair": 28,
+   "review_id": "B01AT3FA9I-20",
+   "stance": "comfortable",
+   "judge": true,
+   "generator": true,
+   "earlier_judge": true
+  },
+  {
+   "pair": 29,
+   "review_id": "B003M68UN8-20",
+   "stance": "durable",
+   "judge": false,
+   "generator": false,
+   "earlier_judge": false
+  },
+  {
+   "pair": 30,
+   "review_id": "B06XTCJ285-28",
+   "stance": "runs_large",
+   "judge": false,
+   "generator": false,
+   "earlier_judge": false
+  },
+  {
+   "pair": 31,
+   "review_id": "B07BZZ33R6-21",
+   "stance": "looks_good",
+   "judge": false,
+   "generator": false,
+   "earlier_judge": false
+  },
+  {
+   "pair": 32,
+   "review_id": "B074PR7GYV-28",
+   "stance": "roomy",
+   "judge": false,
+   "generator": false,
+   "earlier_judge": false
+  },
+  {
+   "pair": 33,
+   "review_id": "B00L4TP3NK-09",
+   "stance": "narrow",
+   "judge": false,
+   "generator": false,
+   "earlier_judge": false
+  },
+  {
+   "pair": 34,
+   "review_id": "B07CG2XTK9-29",
+   "stance": "durable",
+   "judge": true,
+   "generator": true,
+   "earlier_judge": true
+  },
+  {
+   "pair": 35,
+   "review_id": "B06XTCJ285-13",
+   "stance": "true_to_size",
+   "judge": false,
+   "generator": false,
+   "earlier_judge": false
+  },
+  {
+   "pair": 36,
+   "review_id": "B0772R1LRL-27",
+   "stance": "runs_small",
+   "judge": false,
+   "generator": false,
+   "earlier_judge": false
+  },
+  {
+   "pair": 37,
+   "review_id": "B01HF9ZN7I-23",
+   "stance": "poor_quality",
+   "judge": false,
+   "generator": false,
+   "earlier_judge": false
+  },
+  {
+   "pair": 38,
+   "review_id": "B01J2RZYXY-24",
+   "stance": "comfortable",
+   "judge": false,
+   "generator": true,
+   "earlier_judge": false
+  },
+  {
+   "pair": 39,
+   "review_id": "B01MU2XM13-04",
+   "stance": "uncomfortable",
+   "judge": false,
+   "generator": false,
+   "earlier_judge": false
+  },
+  {
+   "pair": 40,
+   "review_id": "B075XJC2D9-18",
+   "stance": "poor_quality",
+   "judge": true,
+   "generator": true,
+   "earlier_judge": true
+  },
+  {
+   "pair": 41,
+   "review_id": "B01MU2XM13-23",
+   "stance": "runs_small",
+   "judge": false,
+   "generator": false,
+   "earlier_judge": false
+  },
+  {
+   "pair": 42,
+   "review_id": "B074PR7GYV-29",
+   "stance": "comfortable",
+   "judge": false,
+   "generator": false,
+   "earlier_judge": false
+  },
+  {
+   "pair": 43,
+   "review_id": "B01D3MS79W-21",
+   "stance": "runs_large",
+   "judge": false,
+   "generator": false,
+   "earlier_judge": null
+  },
+  {
+   "pair": 44,
+   "review_id": "B00413QUHE-27",
+   "stance": "narrow",
+   "judge": false,
+   "generator": false,
+   "earlier_judge": false
+  },
+  {
+   "pair": 45,
+   "review_id": "B000AS7F9G-04",
+   "stance": "durable",
+   "judge": true,
+   "generator": true,
+   "earlier_judge": true
+  },
+  {
+   "pair": 46,
+   "review_id": "B00UZ2Y92I-08",
+   "stance": "uncomfortable",
+   "judge": false,
+   "generator": false,
+   "earlier_judge": false
+  },
+  {
+   "pair": 47,
+   "review_id": "B000AS7F9G-23",
+   "stance": "uncomfortable",
+   "judge": false,
+   "generator": false,
+   "earlier_judge": false
+  },
+  {
+   "pair": 48,
+   "review_id": "B003O2SLXY-18",
+   "stance": "comfortable",
+   "judge": false,
+   "generator": false,
+   "earlier_judge": false
+  },
+  {
+   "pair": 49,
+   "review_id": "B074PR7GYV-01",
+   "stance": "narrow",
+   "judge": true,
+   "generator": false,
+   "earlier_judge": false
+  },
+  {
+   "pair": 50,
+   "review_id": "B01ND4DEH1-11",
+   "stance": "true_to_size",
+   "judge": false,
+   "generator": false,
+   "earlier_judge": false
+  }
+ ]
+}
