@@ -3,6 +3,7 @@
 Semantic review search tool with multi-dimensional filtering.
 """
 
+import asyncio
 import time
 from typing import Any, Dict, List, Optional
 
@@ -78,7 +79,7 @@ class SemanticReviewSearchTool(BaseTool):
         
         try:
             # Generate embedding
-            vector = embed(query)
+            vector = await asyncio.to_thread(embed, query)
             
             # Build filter conditions
             must_conditions = []
@@ -126,7 +127,8 @@ class SemanticReviewSearchTool(BaseTool):
             # Query Qdrant
             if group_by_asin:
                 # Use grouping API
-                results = self.client.query_points_groups(
+                results = await asyncio.to_thread(
+                    self.client.query_points_groups,
                     collection_name=self.collection_name,
                     query=vector,
                     query_filter=Filter(must=must_conditions) if must_conditions else None,
@@ -175,7 +177,8 @@ class SemanticReviewSearchTool(BaseTool):
                 
             else:
                 # Regular query
-                results = self.client.query_points(
+                results = await asyncio.to_thread(
+                    self.client.query_points,
                     collection_name=self.collection_name,
                     query=vector,
                     query_filter=Filter(must=must_conditions) if must_conditions else None,

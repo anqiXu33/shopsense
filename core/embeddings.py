@@ -4,18 +4,29 @@ Embedding service using local sentence-transformers model.
 No API key required.
 """
 
+import threading
 from typing import List
+
 from sentence_transformers import SentenceTransformer
 
 _model: SentenceTransformer = None
+_model_lock = threading.Lock()
 
 
 def _get_model() -> SentenceTransformer:
+    """
+    Load the model once.
+
+    The lock matters because tool calls now run in worker threads, so two
+    concurrent requests can reach this at the same time on a cold start.
+    """
     global _model
     if _model is None:
-        print("[Embeddings] Loading all-MiniLM-L6-v2 model...")
-        _model = SentenceTransformer("all-MiniLM-L6-v2")
-        print("[Embeddings] Model loaded.")
+        with _model_lock:
+            if _model is None:
+                print("[Embeddings] Loading all-MiniLM-L6-v2 model...")
+                _model = SentenceTransformer("all-MiniLM-L6-v2")
+                print("[Embeddings] Model loaded.")
     return _model
 
 

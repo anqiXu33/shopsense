@@ -3,6 +3,7 @@
 Knowledge retrieval tool for material properties and care instructions.
 """
 
+import asyncio
 import time
 from typing import Any, Dict, List, Optional
 
@@ -61,7 +62,7 @@ class KnowledgeRetrievalTool(BaseTool):
         
         try:
             # Generate embedding
-            vector = embed(query)
+            vector = await asyncio.to_thread(embed, query)
             
             # Build filter conditions
             must_conditions = []
@@ -77,7 +78,8 @@ class KnowledgeRetrievalTool(BaseTool):
                 )
             
             # Query Qdrant
-            results = self.client.query_points(
+            results = await asyncio.to_thread(
+                self.client.query_points,
                 collection_name=self.collection_name,
                 query=vector,
                 query_filter=Filter(must=must_conditions) if must_conditions else None,

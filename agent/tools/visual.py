@@ -3,6 +3,7 @@
 Visual semantic search tool using pre-computed visual descriptions.
 """
 
+import asyncio
 import time
 from typing import Any, Dict, List, Optional
 
@@ -55,7 +56,7 @@ class VisualSemanticSearchTool(BaseTool):
         
         try:
             # Generate embedding
-            vector = embed(query)
+            vector = await asyncio.to_thread(embed, query)
             
             # Build filter for ASIN
             query_filter = Filter(
@@ -63,7 +64,8 @@ class VisualSemanticSearchTool(BaseTool):
             )
             
             # Query Qdrant
-            results = self.client.query_points(
+            results = await asyncio.to_thread(
+                self.client.query_points,
                 collection_name=self.collection_name,
                 query=vector,
                 query_filter=query_filter,

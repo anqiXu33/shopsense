@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useVoiceInput, voiceShortcutLabel } from '../hooks/useVoiceInput'
-
-const API_BASE = 'http://localhost:8000'
+import { API_BASE } from '../api'
 
 function StarRating({ rating, count }) {
   const full = Math.round(rating)
@@ -14,14 +13,6 @@ function StarRating({ rating, count }) {
   )
 }
 
-// Speak a short status message using browser TTS (no backend needed)
-function announce(text) {
-  speechSynthesis.cancel()
-  const utt = new SpeechSynthesisUtterance(text)
-  utt.lang = 'en-US'
-  utt.rate = 1.0
-  speechSynthesis.speak(utt)
-}
 
 export default function SearchPage() {
   const [products, setProducts] = useState([])
@@ -44,13 +35,11 @@ export default function SearchPage() {
   const handleVoiceResult = useCallback(transcript => {
     setQuery(transcript)
     setVoiceStatus(`Voice search: ${transcript}`)
-    announce(`Searching for ${transcript}`)
     inputRef.current?.focus()
   }, [])
 
   const handleVoiceStart = useCallback(() => {
     setVoiceStatus('Listening…')
-    announce('Listening')
   }, [])
 
   const handleVoiceEnd = useCallback(() => {
@@ -80,7 +69,7 @@ export default function SearchPage() {
             Search by product name or brand
           </label>
           {/* Voice status live region */}
-          <div aria-live="assertive" aria-atomic="true" className="sr-only">
+          <div aria-live="polite" aria-atomic="true" className="sr-only">
             {voiceStatus}
           </div>
 
@@ -196,7 +185,6 @@ export default function SearchPage() {
                     <a
                       href={`/product/${product.asin}`}
                       className="product-card__link"
-                      tabIndex={0}
                     >
                       <div className="product-card__image-wrap">
                         {product.image_url && product.image_url !== 'placeholder' ? (

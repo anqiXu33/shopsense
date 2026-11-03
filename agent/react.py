@@ -47,69 +47,230 @@ def _first_sentence(text: str, max_chars: int) -> str:
 
 # ── Conflict Detection ────────────────────────────────────────────────────────
 
-# Each tuple: (knowledge_signals, review_signals, topic)
+# A "claim" is a promise made about the product. It can come from the seller's own
+# listing (title, description, attributes) or from the expert material knowledge
+# base. Each tuple is (claim_signals, review_signals, topic).
 _CONFLICT_PAIRS = [
     (
-        {"hypoallergenic", "suitable for sensitive", "gentle on skin", "non-irritating"},
+        {"hypoallergenic", "suitable for sensitive", "safe for sensitive",
+         "gentle on skin", "non-irritating", "ultra-soft", "soft to touch",
+         "soft to the touch"},
         {"itchy", "irritat", "allergic", "rash", "scratch"},
         "skin sensitivity",
     ),
     (
-        {"true to size", "runs true", "standard sizing"},
+        {"true to size", "runs true", "standard sizing", "regular fit"},
         {"size up", "runs small", "too small", "size down", "runs large", "too big", "too large"},
         "sizing",
     ),
     (
-        {"retains warmth", "keeps you warm at", "warm down to", "suitable for -", "rated for 0°c", "rated for -"},
+        {"relaxed fit", "oversized", "roomy", "generous fit"},
+        {"size up", "runs small", "too small", "too tight"},
+        "sizing",
+    ),
+    (
+        {"retains warmth", "keeps you warm", "warm down to", "suitable for -",
+         "rated for 0°c", "rated for -", "extremely warm", "exceptionally warm",
+         "very warm", "warm for its weight", "for extreme cold", "arctic", "thermal"},
         {"runs cold", "not warm enough", "not warm", "no warmth", "colder than expected"},
         "warmth",
     ),
     (
-        {"water resistant", "waterproof", "repels water", "dwr", "beads water"},
-        {"soaked", "not waterproof", "leaks", "wet through", "not water"},
+        {"waterproof", "fully waterproof", "repels water", "dwr", "beads water"},
+        {"soaked", "soaks through", "not waterproof", "leaks", "wet through",
+         "let water in"},
         "water resistance",
     ),
     (
-        {"durable", "long-lasting", "hard-wearing"},
-        {"falls apart", "poor quality", "pilling badly", "worn out quickly", "came apart"},
+        {"durable", "long-lasting", "hard-wearing", "reinforced", "abrasion"},
+        {"falls apart", "poor quality", "pilling badly", "worn out quickly",
+         "came apart", "came loose", "feel cheap", "feels cheap"},
         "durability",
     ),
 ]
 
+_CLAIM_SPLIT = re.compile(r"(?<=[.!?])\s+|;\s*")
 
-def _detect_conflicts(top_knowledge: list, top_reviews: list) -> dict:
+
+def _snippet(segment: str, needle: str, width: int = 80) -> str:
+    """Short window of `segment` around `needle`, used to quote the evidence."""
+    low = segment.lower()
+    idx = low.find(needle) if len(low) == len(segment) else -1
+    if idx < 0:
+        return _first_sentence(segment.strip(), width)
+    start = max(0, idx - width // 3)
+    end = min(len(segment), idx + len(needle) + width)
+    out = segment[start:end].strip()
+    if start > 0:
+        out = "…" + out
+    if end < len(segment):
+        out = out + "…"
+    return out
+
+
+# Word-boundary matching matters: a plain "no " substring also hits "meriNO wool",
+# which would silently cancel every complaint about a merino garment.
+_NEGATION_RE = re.compile(
+    r"n't|\bnon-|\b(?:not|no|never|without|nothing|zero|hardly|barely|less)\b"
+)
+
+# Phrases where a signal word is part of a longer term that means something else.
+# "Durable Water Repellent" is a coating name, not a promise that the item lasts.
+_MATCH_EXCLUSIONS = ("durable water repellent",)
+
+
+def _in_excluded_phrase(low: str, idx: int, length: int) -> bool:
+    """True when the match at `idx` sits inside one of `_MATCH_EXCLUSIONS`."""
+    for phrase in _MATCH_EXCLUSIONS:
+        pos = 0
+        while True:
+            found = low.find(phrase, pos)
+            if found < 0:
+                break
+            if found <= idx and idx + length <= found + len(phrase):
+                return True
+            pos = found + 1
+    return False
+
+
+def _is_negated(low: str, idx: int, window: int = 40) -> bool:
     """
-    Heuristic conflict check: knowledge base claims vs. review signals.
-    Accepts lists of dicts with 'text' and 'relevance_score' keys.
+    True when the match at `idx` is cancelled by a negation just before it.
+
+    "the collar doesn't irritate my neck" and "non-irritating" both contain the
+    complaint token "irritat" while saying the opposite. Only the current
+    sentence is inspected, so a negation two sentences back cannot silently
+    swallow a real complaint.
     """
-    if not top_knowledge or not top_reviews:
-        return {"has_conflict": False, "details": "Insufficient sources for conflict check"}
+    before = low[:idx]
+    cut = max(before.rfind("."), before.rfind("!"), before.rfind("?"))
+    if cut >= 0:
+        before = before[cut + 1:]
+    before = before[-window:]
+    # the slice can start mid-word; drop that fragment so it cannot fake a cue
+    before = re.sub(r"^\S*", "", before)
+    return bool(_NEGATION_RE.search(before))
 
-    knowledge_text = " ".join(
-        item.get("text", "").lower()
-        for item in top_knowledge
-        if item.get("relevance_score", 0) > 0.3
-    )
-    review_text = " ".join(
-        item.get("text", "").lower()
-        for item in top_reviews
-        if item.get("relevance_score", 0) > 0.3
-    )
 
-    if not knowledge_text or not review_text:
-        return {"has_conflict": False, "details": "No high-confidence sources to compare"}
+def _find_signal(segments: list, signals: set):
+    """
+    First (segment, signal) pair where a signal occurs and is not negated.
+
+    Signals that carry their own negation ("not warm enough") are matched as-is.
+    Signals are sorted so the quoted evidence is stable across runs.
+    """
+    for segment in segments:
+        low = segment.lower()
+        for signal in sorted(signals):
+            carries_negation = bool(_NEGATION_RE.search(signal))
+            start = 0
+            while True:
+                idx = low.find(signal, start)
+                if idx < 0:
+                    break
+                if (
+                    not _in_excluded_phrase(low, idx, len(signal))
+                    and (carries_negation or not _is_negated(low, idx))
+                ):
+                    return segment, signal
+                start = idx + len(signal)
+    return None, None
+
+
+def _official_claims(product: dict) -> list:
+    """
+    The seller's own promises: title, description sentences and attribute values.
+
+    These are the claims the listing is accountable for. The knowledge base is
+    generic background about a material, not something the seller said, so the
+    two are kept apart and reported under different source labels.
+    """
+    if not product:
+        return []
+    segments = []
+    name = (product.get("name") or "").strip()
+    if name:
+        segments.append(name)
+    description = (product.get("description") or "").strip()
+    if description:
+        segments.extend(s.strip() for s in _CLAIM_SPLIT.split(description) if s.strip())
+    attributes = product.get("attributes") or {}
+    if isinstance(attributes, dict):
+        for key, value in attributes.items():
+            if isinstance(value, str) and value.strip():
+                segments.append(f"{key}: {value.strip()}")
+    return segments
+
+
+def _detect_conflicts(top_knowledge: list, top_reviews: list, product: dict = None) -> dict:
+    """
+    Flag topics where a claim about the product is contradicted by buyers.
+
+    Two claim sources are checked, in order of precedence:
+      1. the official listing   — the seller's own title, description, attributes
+      2. the knowledge base     — generic expert entries retrieved for this query
+
+    Source 1 is what the product promise is about, and it is always available,
+    so a conflict is surfaced even when no knowledge entry was retrieved.
+
+    Returns {"has_conflict", "details", "conflicts": [{topic, source, claim, counter}]}.
+    """
+    reviews = [
+        item.get("text", "")
+        for item in (top_reviews or [])
+        if item.get("text") and item.get("relevance_score", 0) > 0.3
+    ]
+    if not reviews:
+        return {
+            "has_conflict": False,
+            "details": "No high-confidence reviews to compare against",
+            "conflicts": [],
+        }
+
+    knowledge = [
+        item.get("text", "")
+        for item in (top_knowledge or [])
+        if item.get("text") and item.get("relevance_score", 0) > 0.3
+    ]
+    claim_sources = [
+        ("the official listing", _official_claims(product)),
+        ("the material knowledge base", knowledge),
+    ]
 
     conflicts = []
-    for know_signals, rev_signals, topic in _CONFLICT_PAIRS:
-        if any(s in knowledge_text for s in know_signals) and any(s in review_text for s in rev_signals):
-            conflicts.append(topic)
+    seen_topics = set()
+    for claim_signals, review_signals, topic in _CONFLICT_PAIRS:
+        if topic in seen_topics:
+            continue
+        review_segment, review_signal = _find_signal(reviews, review_signals)
+        if review_segment is None:
+            continue
+        for source, segments in claim_sources:
+            claim_segment, claim_signal = _find_signal(segments, claim_signals)
+            if claim_segment is None:
+                continue
+            seen_topics.add(topic)
+            conflicts.append({
+                "topic": topic,
+                "source": source,
+                "claim": _snippet(claim_segment, claim_signal),
+                "counter": _snippet(review_segment, review_signal),
+            })
+            break
 
-    if conflicts:
+    if not conflicts:
         return {
-            "has_conflict": True,
-            "details": f"Conflict detected in: {', '.join(conflicts)}. Reviews contradict knowledge base claims.",
+            "has_conflict": False,
+            "details": "Claims and reviews are consistent",
+            "conflicts": [],
         }
-    return {"has_conflict": False, "details": "Knowledge base and reviews are consistent"}
+
+    details = "; ".join(
+        f'on {c["topic"]}, {c["source"]} says "{c["claim"]}" '
+        f'but a buyer reports "{c["counter"]}"'
+        for c in conflicts
+    )
+    return {"has_conflict": True, "details": details, "conflicts": conflicts}
 
 
 def _build_retrieval_summary(trace: list) -> str:
@@ -278,6 +439,14 @@ _REACT_TOOL_DEFS = [
             "parameters": {
                 "type": "object",
                 "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": (
+                            "What to look for, phrased the way a reviewer would write it, "
+                            "e.g. 'runs small, had to size up' or 'still warm at minus ten'. "
+                            "Sharpen or rephrase it when an earlier search came back off-topic."
+                        ),
+                    },
                     "limit": {
                         "type": "integer",
                         "description": "Number of reviews to retrieve (1–8). Use more to aggregate opinions.",
@@ -285,7 +454,7 @@ _REACT_TOOL_DEFS = [
                         "maximum": 8,
                     },
                 },
-                "required": ["limit"],
+                "required": ["query", "limit"],
             },
         },
     },
@@ -301,6 +470,14 @@ _REACT_TOOL_DEFS = [
             "parameters": {
                 "type": "object",
                 "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": (
+                            "What to look up, phrased the way a fabric reference would put it, "
+                            "e.g. 'down fill power temperature rating' or 'merino fibre diameter "
+                            "skin irritation'. Name the material when you know it."
+                        ),
+                    },
                     "limit": {
                         "type": "integer",
                         "description": "Number of knowledge entries to retrieve (1–5).",
@@ -308,7 +485,7 @@ _REACT_TOOL_DEFS = [
                         "maximum": 5,
                     },
                 },
-                "required": ["limit"],
+                "required": ["query", "limit"],
             },
         },
     },
@@ -323,6 +500,13 @@ _REACT_TOOL_DEFS = [
             "parameters": {
                 "type": "object",
                 "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": (
+                            "Which visual aspect you need, e.g. 'colour and shade', 'collar and "
+                            "buttons', 'overall silhouette and length'."
+                        ),
+                    },
                     "limit": {
                         "type": "integer",
                         "description": "Number of visual descriptions to retrieve (1–2).",
@@ -330,7 +514,7 @@ _REACT_TOOL_DEFS = [
                         "maximum": 2,
                     },
                 },
-                "required": ["limit"],
+                "required": ["query", "limit"],
             },
         },
     },
@@ -338,6 +522,29 @@ _REACT_TOOL_DEFS = [
 
 
 # ── System Prompt Builder ─────────────────────────────────────────────────────
+
+# Shared by the ReAct agent and the browser-extension endpoint so the two
+# never drift into speaking differently to the same user.
+VOICE_RULES = (
+    "## Output Format — READ THIS CAREFULLY\n"
+    "Your answer will be read aloud by a screen reader. Sentence order is critical.\n\n"
+    "REQUIRED sentence order:\n"
+    "  Sentence 1 — Verdict: a direct yes/no/likely/unclear answer to the question. "
+    "This is the FIRST thing the user hears. Never bury it.\n"
+    "  Sentence 2 — Evidence: cite the source naturally "
+    "(e.g. 'Most reviewers say...', 'The product specs confirm...', "
+    "'Reviews are mixed, with some saying... and others saying...').\n"
+    "  Sentence 3 — Tip (optional): one concrete, actionable tip if useful.\n\n"
+    "HARD RULES:\n"
+    "- Total length: 2 to 3 sentences. Never more.\n"
+    "- Plain prose only. No bullet points, no numbered lists, no headers.\n"
+    "- No symbols that sound wrong when read aloud: no %, no /, no arrows, "
+    "no star characters, no currency symbols — spell them out instead.\n"
+    "- Do not start with 'I', 'Based on', 'As an AI', or 'According to my search'.\n"
+    "- If data is missing, start with: 'I could not find enough information about [topic] "
+    "for this product.' Then stop — do not speculate.\n\n"
+)
+
 
 def _build_react_system(product: dict, user_context) -> str:
     attrs = product.get("attributes", {})
@@ -385,34 +592,25 @@ def _build_react_system(product: dict, user_context) -> str:
 
         "## Retrieval Rules\n"
         "- You MUST call at least one search tool before writing any answer.\n"
+        "- Every tool takes a `query`. Write it in the words the source itself would use, "
+        "not the user's phrasing: a reviewer writes 'runs small', a fabric reference writes "
+        "'fill power temperature rating'.\n"
         "- After each search result, decide: can I answer confidently now? "
-        "If yes, write your answer. If not, search once more with a different tool.\n"
+        "If yes, write your answer. If not, search again — either a different tool, or the "
+        "same tool with a sharper query aimed at what was missing.\n"
+        "- When a [Context Update] names a specific gap, your next query must target that gap.\n"
         "- Maximum 3 searches total. After the third, answer with whatever you have.\n"
         "- If results are irrelevant or empty, say so explicitly — do not fill the gap with guesses.\n\n"
 
-        "## Output Format — READ THIS CAREFULLY\n"
-        "Your answer will be read aloud by a screen reader. Sentence order is critical.\n\n"
-        "REQUIRED sentence order:\n"
-        "  Sentence 1 — Verdict: a direct yes/no/likely/unclear answer to the question. "
-        "This is the FIRST thing the user hears. Never bury it.\n"
-        "  Sentence 2 — Evidence: cite the source naturally "
-        "(e.g. 'Most reviewers say...', 'The product specs confirm...', "
-        "'Reviews are mixed, with some saying... and others saying...').\n"
-        "  Sentence 3 — Tip (optional): one concrete, actionable tip if useful.\n\n"
-        "HARD RULES:\n"
-        "- Total length: 2 to 3 sentences. Never more.\n"
-        "- Plain prose only. No bullet points, no numbered lists, no headers.\n"
-        "- No symbols that sound wrong when read aloud: no %, no /, no arrows, "
-        "no star characters, no currency symbols — spell them out instead.\n"
-        "- Do not start with 'I', 'Based on', 'As an AI', or 'According to my search'.\n"
-        "- If data is missing, start with: 'I could not find enough information about [topic] "
-        "for this product.' Then stop — do not speculate.\n\n"
+        + VOICE_RULES +
 
         "## Conflict Handling\n"
         "If a [Context Update] message reports a conflict, do NOT give a simple yes/no verdict.\n"
         "Use this format instead:\n"
-        "  Sentence 1 — Conflict verdict: state both sides directly, "
-        "e.g. 'The official specs claim X, but multiple reviewers report Y.'\n"
+        "  Sentence 1 — Conflict verdict: state both sides directly and name each source, "
+        "e.g. 'The listing says X, but several buyers report Y.' The update tells you whether "
+        "the claim came from the official listing or from the material knowledge base — "
+        "do not swap the two, the listing is what the seller promised.\n"
         "  Sentence 2 — Trust guidance: explain which source is more reliable for this specific claim "
         "and why (specs are authoritative for technical ratings; reviews are authoritative for real-world fit, "
         "durability, and skin reactions).\n"
@@ -494,6 +692,7 @@ async def react_loop(
     trace: list[dict] = []
     retrieved: dict[str, list] = {"reviews": [], "knowledge": [], "visual": []}
     answer = "[No answer generated]"
+    last_conflict: dict = {"has_conflict": False, "details": "", "conflicts": []}
 
     for iteration in range(max_iter):
         tool_choice = "required" if iteration == 0 else "auto"
@@ -530,22 +729,28 @@ async def react_loop(
         # Execute all tool calls in this iteration in parallel
         async def _exec(tc):
             name = tc["function"]["name"]
-            args = json.loads(tc["function"]["arguments"])
-            limit = max(1, int(args.get("limit", 3)))
+            try:
+                args = json.loads(tc["function"]["arguments"] or "{}")
+            except (TypeError, ValueError):
+                args = {}
+            limit = max(1, int(args.get("limit", 3) or 3))
+            # The agent rewrites the query to target whatever the reflection said
+            # was missing; fall back to the user's own words when it supplies none.
+            search_query = str(args.get("query") or "").strip() or question
             t0 = time.time()
             if name == "review_search":
-                result = await _TOOL_REVIEW.execute(query=question, asin=asin, top_k=limit)
+                result = await _TOOL_REVIEW.execute(query=search_query, asin=asin, top_k=limit)
                 retrieved["reviews"].extend(result.data.get("reviews", []) if result.success else [])
             elif name == "knowledge_search":
-                result = await _TOOL_KNOWLEDGE.execute(query=question, top_k=limit)
+                result = await _TOOL_KNOWLEDGE.execute(query=search_query, top_k=limit)
                 retrieved["knowledge"].extend(result.data.get("knowledge_items", []) if result.success else [])
             elif name == "visual_search":
-                result = await _TOOL_VISUAL.execute(asin=asin, query=question, top_k=limit)
+                result = await _TOOL_VISUAL.execute(asin=asin, query=search_query, top_k=limit)
                 retrieved["visual"].extend(result.data.get("visual_items", []) if result.success else [])
             else:
                 result = ToolResult(tool_name=name, success=False, data=None, relevance_score=0.0)
             ms = round((time.time() - t0) * 1000)
-            return tc["id"], name, result, ms
+            return tc["id"], name, search_query, limit, result, ms
 
         exec_results = await asyncio.gather(*[_exec(tc) for tc in tool_calls])
 
@@ -557,16 +762,14 @@ async def react_loop(
 
         primary_tool_id = tool_calls[0]["id"] if tool_calls else None
         iter_actions, iter_observations = [], []
-        for tool_id, name, result, ms in exec_results:
+        for tool_id, name, search_query, limit_used, result, ms in exec_results:
             obs_text = _format_tool_observation(name, result, is_primary=(tool_id == primary_tool_id))
             messages.append({"role": "tool", "tool_call_id": tool_id, "content": obs_text})
             n_results = (
                 len(result.data.get("reviews") or result.data.get("knowledge_items") or result.data.get("visual_items") or [])
                 if result.success and result.data else 0
             )
-            iter_actions.append({"tool": name, "limit": int(json.loads(
-                next(tc["function"]["arguments"] for tc in tool_calls if tc["id"] == tool_id)
-            ).get("limit", 3))})
+            iter_actions.append({"tool": name, "limit": limit_used, "query": search_query})
             iter_observations.append({
                 "tool": name,
                 "results": n_results,
@@ -575,6 +778,12 @@ async def react_loop(
             })
 
         trace.append({"iteration": iteration + 1, "actions": iter_actions, "observations": iter_observations})
+
+        # Conflict check runs on every round, not only on the ones that inject
+        # context, so the forced-final path below can mention it too. The panel
+        # must never report a conflict the answer never heard about.
+        last_conflict = _detect_conflicts(retrieved["knowledge"], retrieved["reviews"], product)
+        trace[-1]["conflict"] = last_conflict
 
         # ── Retrieval Reflection + Context Engineering ──
         # After each round (except the last) an LLM evaluates whether the data
@@ -597,11 +806,11 @@ async def react_loop(
             if summary:
                 context_notes.append(summary)
 
-            conflict = _detect_conflicts(retrieved["knowledge"], retrieved["reviews"])
-            if conflict["has_conflict"]:
+            if last_conflict["has_conflict"]:
                 context_notes.append(
-                    f"Conflict detected: {conflict['details']} "
-                    "Acknowledge this conflict explicitly in your answer."
+                    f"Conflict detected — {last_conflict['details']}. "
+                    "Acknowledge this conflict explicitly in your answer and name the "
+                    "source on each side."
                 )
 
             # Reflection drives the next move: search more vs. answer now.
@@ -609,7 +818,8 @@ async def react_loop(
                 gap = reflection.get("gaps", "none")
                 context_notes.append(
                     f"Retrieval is incomplete (confidence: {reflection.get('confidence', 'low')}). "
-                    f"Missing: {gap}. Use a different search tool to fill this gap before answering."
+                    f"Missing: {gap}. Search again with a query aimed squarely at that gap — "
+                    "a different tool, or the same tool with sharper wording."
                 )
             else:
                 context_notes.append(
@@ -624,7 +834,13 @@ async def react_loop(
 
     else:
         # Max iterations reached — force a final answer
-        messages.append({"role": "user", "content": "You have gathered enough information. Provide your final answer now."})
+        final_prompt = "You have gathered enough information. Provide your final answer now."
+        if last_conflict["has_conflict"]:
+            final_prompt += (
+                f" A conflict was detected — {last_conflict['details']}. "
+                "Use the conflict format: state both sides, name each source, then give a practical tip."
+            )
+        messages.append({"role": "user", "content": final_prompt})
         try:
             resp = await asyncio.to_thread(
                 req_lib.post,

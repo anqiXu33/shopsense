@@ -1,4 +1,6 @@
 .env
+.env.*
+!.env.example
 __pycache__/
 *.pyc
 .DS_Store
@@ -7,3 +9,7 @@ venv/
 *.log
 node_modules/
 frontend/dist/
+
+# Local Claude Code settings: machine-specific, and past sessions have left
+# live API keys inside allow-list entries here.
+.claude/settings.local.json

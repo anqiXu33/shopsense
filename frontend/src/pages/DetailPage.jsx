@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useVoiceInput, voiceShortcutLabel } from '../hooks/useVoiceInput'
-
-const API_BASE = 'http://localhost:8000'
+import { API_BASE } from '../api'
 
 const QUICK_QUESTIONS = [
   'Is it suitable for -10°C weather?',
@@ -61,6 +60,9 @@ function ReActTracePanel({ trace }) {
                 {step.actions.map((a, j) => (
                   <span key={j} className="tool-badge">
                     {TOOL_ICON[a.tool] ?? '🔍'} {a.tool.replace('_search', '')}({a.limit})
+                    {a.query && (
+                      <span className="tool-badge__query">“{a.query}”</span>
+                    )}
                   </span>
                 ))}
               </div>
@@ -246,14 +248,8 @@ export default function DetailPage() {
 
   const handleVoiceResult = useCallback(transcript => {
     setQuestion(transcript)
-    setVoiceStatus(`Voice input: ${transcript}`)
-    // Brief TTS confirmation then auto-submit
-    const utt = new SpeechSynthesisUtterance(`Got it. Asking: ${transcript}`)
-    utt.lang = /[\u4e00-\u9fff]/.test(transcript) ? 'zh-CN' : 'en-US'
-    utt.rate = 1.0
-    speechSynthesis.cancel()
-    speechSynthesis.speak(utt)
-    utt.onend = () => submitQuery(transcript)
+    setVoiceStatus(`Got it. Asking: ${transcript}`)
+    submitQuery(transcript)
   }, []) // submitQuery is stable (defined below, uses refs internally)
 
   const handleVoiceStart = useCallback(() => {
@@ -464,7 +460,7 @@ export default function DetailPage() {
   return (
     <main id="main-content" className="page">
       {/* Hidden live regions */}
-      <div aria-live="assertive" aria-atomic="true" className="sr-only">
+      <div aria-live="polite" aria-atomic="true" className="sr-only">
         {statusAssertive}
       </div>
       <div aria-live="polite" aria-atomic="true" className="sr-only">
@@ -479,11 +475,10 @@ export default function DetailPage() {
         {/* ── Left: Product Info ─────────────────────────────────── */}
         <section aria-label="Product information">
           <div className="detail-product">
-            <button
-              className="detail-product__image-wrap"
-              onClick={handleImageTts}
-              aria-label={speaking && speakingMsgIdx === 'image' ? 'Stop reading image description' : 'Click image to hear description aloud'}
-            >
+            {/* A button's aria-label replaces everything inside it, which hid the
+                image's own alt text. The image is plain again and the read-aloud
+                control sits over it as its own button. */}
+            <div className="detail-product__image-wrap">
               {image_url && image_url !== 'placeholder' ? (
                 <img
                   src={image_url}
@@ -499,10 +494,22 @@ export default function DetailPage() {
                   </svg>
                 </div>
               )}
-              <span className="detail-product__tts-hint" aria-hidden="true">
-                {ttsLoading && speakingMsgIdx === 'image' ? '⏳ Loading…' : speaking && speakingMsgIdx === 'image' ? '⏹ Stop' : '🔊 Read image'}
-              </span>
-            </button>
+              <button
+                type="button"
+                className="detail-product__tts-btn"
+                onClick={handleImageTts}
+                aria-pressed={speakingMsgIdx === 'image' && (speaking || ttsLoading)}
+                aria-label={
+                  speakingMsgIdx === 'image' && (speaking || ttsLoading)
+                    ? 'Stop reading the image description aloud'
+                    : 'Read a description of this image aloud'
+                }
+              >
+                <span aria-hidden="true">
+                  {ttsLoading && speakingMsgIdx === 'image' ? '⏳ Loading…' : speaking && speakingMsgIdx === 'image' ? '⏹ Stop' : '🔊 Describe image'}
+                </span>
+              </button>
+            </div>
 
             <div className="detail-product__info">
               <h1 className="detail-product__name">{name}</h1>
@@ -518,9 +525,16 @@ export default function DetailPage() {
               </p>
 
               <p className="detail-product__field">
-                <span className="sr-only">Rating: </span>
-                {'★'.repeat(Math.round(rating))}{'☆'.repeat(5 - Math.round(rating))}
-                {' '}{rating.toFixed(1)} — {review_count.toLocaleString()} reviews
+                {/* Stars are decoration. Left exposed, a screen reader reads
+                    "black star black star black star"; the spoken version is a
+                    sentence instead. */}
+                <span aria-hidden="true">
+                  {'★'.repeat(Math.round(rating))}{'☆'.repeat(5 - Math.round(rating))}
+                  {' '}{rating.toFixed(1)} — {review_count.toLocaleString()} reviews
+                </span>
+                <span className="sr-only">
+                  Rated {rating.toFixed(1)} out of 5, from {review_count.toLocaleString()} reviews
+                </span>
               </p>
 
               {attributes?.material && (
@@ -564,16 +578,28 @@ export default function DetailPage() {
                   {msg.role === 'user' ? 'You' : 'ShopSense'}
                 </span>
                 {msg.role === 'ai' ? (
-                  <button
-                    className="chat-msg__bubble chat-msg__bubble--tts"
-                    onClick={() => speakText(msg.content, i)}
-                    aria-label={speaking && speakingMsgIdx === i ? 'Stop reading this reply' : 'Click to read this reply aloud'}
-                  >
-                    {msg.content}
-                    <span className="chat-msg__tts-hint" aria-hidden="true">
-                      {ttsLoading && speakingMsgIdx === i ? ' ⏳' : speaking && speakingMsgIdx === i ? ' ⏹' : ' 🔊'}
-                    </span>
-                  </button>
+                  /* The answer stays plain text. Wrapping it in a button made the
+                     button's aria-label the accessible name, so a screen reader
+                     announced "read this reply aloud" instead of the reply.
+                     Speaking is now a separate control beside the text. */
+                  <div className="chat-msg__ai">
+                    <div className="chat-msg__bubble">{msg.content}</div>
+                    <button
+                      type="button"
+                      className="chat-msg__speak"
+                      onClick={() => speakText(msg.content, i)}
+                      aria-pressed={speakingMsgIdx === i && (speaking || ttsLoading)}
+                      aria-label={
+                        speakingMsgIdx === i && (speaking || ttsLoading)
+                          ? 'Stop reading this reply aloud'
+                          : 'Read this reply aloud'
+                      }
+                    >
+                      <span aria-hidden="true">
+                        {ttsLoading && speakingMsgIdx === i ? '⏳' : speaking && speakingMsgIdx === i ? '⏹' : '🔊'}
+                      </span>
+                    </button>
+                  </div>
                 ) : (
                   <div className="chat-msg__bubble">{msg.content}</div>
                 )}
@@ -618,7 +644,7 @@ export default function DetailPage() {
                 Your question
               </label>
               {/* Voice status live region */}
-              <div aria-live="assertive" aria-atomic="true" className="sr-only">
+              <div aria-live="polite" aria-atomic="true" className="sr-only">
                 {voiceStatus}
               </div>
               <div className="query-form__input-row">

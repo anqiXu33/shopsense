@@ -28,6 +28,7 @@ load_dotenv()
 from config.settings import QDRANT_URL, QDRANT_API_KEY, QDRANT_COLLECTIONS
 from agent.react import react_loop, _detect_conflicts, _build_retrieval_summary
 from agent.legacy import run_legacy_query
+from agent.page import answer_from_page
 
 
 # ── App setup ─────────────────────────────────────────────────────────────────
@@ -66,6 +67,19 @@ class QueryRequest(BaseModel):
     question: str
     history: list[dict] = []
     user_context: UserContext = UserContext()
+
+
+class ExtensionQueryRequest(BaseModel):
+    """What the browser extension scraped off a live product page."""
+    asin: str = ""
+    title: str = ""
+    brand: str | None = None
+    price: str | None = None
+    description: str = ""
+    bullets: list[str] = []
+    reviews: list[str] = []
+    image_url: str | None = None
+    question: str = ""
 
 
 # ── Routes ────────────────────────────────────────────────────────────────────
@@ -143,7 +157,7 @@ async def query(req: QueryRequest):
         "answer": answer,
         "retrieval_summary": _build_retrieval_summary(trace),
         "reasoning_trace": trace,
-        "conflict_detection": _detect_conflicts(retrieved["knowledge"], retrieved["reviews"]),
+        "conflict_detection": _detect_conflicts(retrieved["knowledge"], retrieved["reviews"], product),
         "reflection": last_reflection,
         "timing": {"total_ms": total_ms},
     }
@@ -168,6 +182,22 @@ async def query_legacy(req: QueryRequest):
     req._product = product_results[0].payload
 
     return await run_legacy_query(req, client)
+
+
+@app.post("/api/extension_query")
+async def extension_query(req: ExtensionQueryRequest):
+    """
+    Answer from a live product page the browser extension scraped.
+
+    There is no Qdrant lookup here: the product is not in our data set. The
+    seller's own copy is compared against the reviews on that same page, so
+    the extension gets a real conflict check instead of its offline keyword
+    guess. Works with no API key too — it falls back to a plain reading of
+    the page rather than failing.
+    """
+    if not (req.title or req.description or req.reviews):
+        raise HTTPException(status_code=400, detail="No page content received")
+    return await answer_from_page(req)
 
 
 @app.get("/api/tools")

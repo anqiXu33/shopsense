@@ -25,7 +25,7 @@ from qdrant_client.models import Filter, FieldCondition, MatchValue
 
 from config.settings import QDRANT_COLLECTIONS
 from core.embeddings import embed
-from agent.react import _first_sentence, _CONFLICT_PAIRS
+from agent.react import _first_sentence, _detect_conflicts
 
 
 # ── Intent Classification ─────────────────────────────────────────────────────
@@ -424,32 +424,21 @@ async def _knowledge_fallback(client: QdrantClient, product: dict, original_ques
 
 # ── Conflict Detection (Qdrant-point version for legacy) ─────────────────────
 
-def _detect_conflicts_points(top_knowledge, top_reviews) -> dict:
-    """Conflict detection for Qdrant ScoredPoint lists (used by legacy pipeline)."""
-    if not top_knowledge or not top_reviews:
-        return {"has_conflict": False, "details": "Insufficient sources for conflict check"}
+def _detect_conflicts_points(top_knowledge, top_reviews, product: dict = None) -> dict:
+    """
+    Conflict detection for Qdrant ScoredPoint lists (used by the legacy pipeline).
 
-    knowledge_text = " ".join(
-        p.payload.get("text", "").lower() for p in top_knowledge if p.score > 0.3
-    )
-    review_text = " ".join(
-        p.payload.get("text", "").lower() for p in top_reviews if p.score > 0.3
-    )
+    Converts points to the dict shape the shared detector expects, so both
+    pipelines judge conflicts by the same rules and both compare against the
+    official listing rather than the knowledge base alone.
+    """
+    def as_items(points):
+        return [
+            {"text": p.payload.get("text", ""), "relevance_score": p.score}
+            for p in (points or [])
+        ]
 
-    if not knowledge_text or not review_text:
-        return {"has_conflict": False, "details": "No high-confidence sources to compare"}
-
-    conflicts = []
-    for know_signals, rev_signals, topic in _CONFLICT_PAIRS:
-        if any(s in knowledge_text for s in know_signals) and any(s in review_text for s in rev_signals):
-            conflicts.append(topic)
-
-    if conflicts:
-        return {
-            "has_conflict": True,
-            "details": f"Conflict detected in: {', '.join(conflicts)}. Reviews contradict knowledge base claims.",
-        }
-    return {"has_conflict": False, "details": "Knowledge base and reviews are consistent"}
+    return _detect_conflicts(as_items(top_knowledge), as_items(top_reviews), product)
 
 
 # ── Main Entry Point ──────────────────────────────────────────────────────────
@@ -515,11 +504,11 @@ async def run_legacy_query(req, client: QdrantClient) -> dict:
     if top_reviews:
         lines = ["# Customer Reviews"]
         for p in top_reviews:
-            stars = "★" * p.payload["rating"] + "☆" * (5 - p.payload["rating"])
+            rating = p.payload["rating"]
             height = p.payload.get("reviewer_height", "")
             height_str = f" | {height}cm" if height else ""
             text = _first_sentence(p.payload["text"], _REVIEW_MAX)
-            lines.append(f'- {stars}{height_str}: "{text}"')
+            lines.append(f'- [{rating} out of 5{height_str}]: "{text}"')
         sections["reviews"] = "\n".join(lines)
 
     if top_knowledge:
@@ -613,6 +602,6 @@ async def run_legacy_query(req, client: QdrantClient) -> dict:
             "fallback_triggered": needs_fallback,
             "hints": hints,
         },
-        "conflict_detection": _detect_conflicts_points(top_knowledge, top_reviews),
+        "conflict_detection": _detect_conflicts_points(top_knowledge, top_reviews, product),
         "timing": {"embed_ms": embed_ms, "total_ms": total_ms},
     }
