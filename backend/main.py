@@ -4,11 +4,10 @@ backend/main.py
 FastAPI entry point for ShopSense v2.
 
 Run:
-    cd backend
-    uvicorn main:app --reload --port 8000
+    (from the repository root)
+    uvicorn backend.main:app --reload --port 8000
 """
 
-import asyncio
 import os
 import sys
 import time
@@ -16,19 +15,19 @@ import time
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
-import requests as req_lib
 from pydantic import BaseModel
-from qdrant_client import QdrantClient
+from typing import Literal
+
 from qdrant_client.models import Filter, FieldCondition, MatchValue
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 load_dotenv()
 
-from config.settings import QDRANT_URL, QDRANT_API_KEY, QDRANT_COLLECTIONS
+from config.settings import QDRANT_COLLECTIONS, get_qdrant_client
 from agent.react import react_loop, _detect_conflicts, _build_retrieval_summary
 from agent.legacy import run_legacy_query
 from agent.page import answer_from_page
+from agent.review_insights import answer_question, render_highlights, search_products
 
 
 # ── App setup ─────────────────────────────────────────────────────────────────
@@ -43,14 +42,31 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-_qdrant: QdrantClient = None
+def get_qdrant():
+    return get_qdrant_client()
 
 
-def get_qdrant() -> QdrantClient:
-    global _qdrant
-    if _qdrant is None:
-        _qdrant = QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY)
-    return _qdrant
+_catalogue: dict = {}
+
+
+def catalogue() -> dict:
+    """All product payloads by ASIN, read from Qdrant once (300 items)."""
+    if not _catalogue:
+        points, _ = get_qdrant().scroll(
+            collection_name=QDRANT_COLLECTIONS["products"],
+            limit=10_000,
+            with_payload=True,
+            with_vectors=False,
+        )
+        _catalogue.update({p.payload["asin"]: p.payload for p in points})
+    return _catalogue
+
+
+def product_or_404(asin: str) -> dict:
+    product = catalogue().get(asin)
+    if product is None:
+        raise HTTPException(status_code=404, detail="Product not found")
+    return product
 
 
 # ── Pydantic Models ───────────────────────────────────────────────────────────
@@ -84,43 +100,54 @@ class ExtensionQueryRequest(BaseModel):
 
 # ── Routes ────────────────────────────────────────────────────────────────────
 
+Lang = Literal["zh", "en"]
+
+
+class AskRequest(BaseModel):
+    asin: str
+    question: str
+    lang: Lang = "zh"
+
+
+class SearchRequest(BaseModel):
+    query: str
+    lang: Lang = "zh"
+
+
 @app.get("/api/products")
-async def get_products():
-    client = get_qdrant()
-    results, _ = client.scroll(
-        collection_name=QDRANT_COLLECTIONS["products"],
-        limit=100,
-        with_payload=True,
-        with_vectors=False,
-    )
+def get_products():
     return [
-        {
-            "asin": p.payload["asin"],
-            "name": p.payload["name"],
-            "brand": p.payload["brand"],
-            "price": p.payload["price"],
-            "image_url": p.payload.get("image_url"),
-            "category": p.payload["category"],
-            "rating": p.payload["rating"],
-            "review_count": p.payload["review_count"],
-        }
-        for p in results
+        {k: p[k] for k in ("asin", "name", "brand", "price", "image_url", "category",
+                           "gender", "rating", "review_count")}
+        for p in sorted(catalogue().values(), key=lambda p: p["name"])
     ]
 
 
 @app.get("/api/products/{asin}")
-async def get_product(asin: str):
-    client = get_qdrant()
-    results, _ = client.scroll(
-        collection_name=QDRANT_COLLECTIONS["products"],
-        scroll_filter=Filter(must=[FieldCondition(key="asin", match=MatchValue(value=asin))]),
-        limit=1,
-        with_payload=True,
-        with_vectors=False,
-    )
-    if not results:
-        raise HTTPException(status_code=404, detail="Product not found")
-    return results[0].payload
+def get_product(asin: str, lang: Lang = "zh"):
+    """
+    Product details in `lang`: the review highlights (feature 1) and what the
+    shoe looks like, described from its photo (scripts/generate_visual_descriptions.py).
+    """
+    product = product_or_404(asin)
+    details = {k: v for k, v in product.items() if k not in ("highlights", "appearance")}
+    return {
+        **details,
+        "highlights": render_highlights(product["highlights"], lang),
+        "appearance": product["appearance"][lang],
+    }
+
+
+@app.post("/api/ask")
+def ask(req: AskRequest):
+    """Answer a question from this product's reviews only (feature 2)."""
+    return answer_question(product_or_404(req.asin), req.question, req.lang)
+
+
+@app.post("/api/search")
+def search(req: SearchRequest):
+    """Recommend products whose reviews match a need (feature 3)."""
+    return search_products(req.query, catalogue(), req.lang)
 
 
 @app.post("/api/query")
@@ -207,93 +234,3 @@ async def get_tools():
         {"name": "knowledge_search", "description": "Search expert fabric and material knowledge base"},
         {"name": "visual_search", "description": "Search visual image descriptions for accessibility"},
     ]
-
-
-@app.get("/api/tts")
-async def tts_image(asin: str):
-    """Return a spoken description of the product image, including product metadata."""
-    client = get_qdrant()
-
-    visual_results, product_results = await asyncio.gather(
-        asyncio.to_thread(
-            client.scroll,
-            collection_name=QDRANT_COLLECTIONS["visual_semantic"],
-            scroll_filter=Filter(must=[FieldCondition(key="asin", match=MatchValue(value=asin))]),
-            limit=1,
-            with_payload=True,
-            with_vectors=False,
-        ),
-        asyncio.to_thread(
-            client.scroll,
-            collection_name=QDRANT_COLLECTIONS["products"],
-            scroll_filter=Filter(must=[FieldCondition(key="asin", match=MatchValue(value=asin))]),
-            limit=1,
-            with_payload=True,
-            with_vectors=False,
-        ),
-    )
-
-    visual_points, _ = visual_results
-    product_points, _ = product_results
-
-    if not visual_points:
-        return {"answer": "No visual description available for this product."}
-
-    return {"answer": visual_points[0].payload["text"]}
-
-
-@app.get("/api/tts/speech")
-async def tts_speech(text: str):
-    """Convert text to speech. Returns audio/mpeg stream.
-
-    Provider priority (first available wins):
-      1. OpenAI TTS (tts-1-hd, nova)  — set OPENAI_API_KEY
-      2. DashScope CosyVoice           — set DASHSCOPE_API_KEY +
-                                         DASHSCOPE_BASE_URL=https://dashscope.aliyuncs.com/...
-    Falls back to 404 so the frontend can use browser TTS.
-    """
-    openai_key = os.getenv("OPENAI_API_KEY")
-    if openai_key:
-        def _openai_stream():
-            r = req_lib.post(
-                "https://api.openai.com/v1/audio/speech",
-                headers={"Authorization": f"Bearer {openai_key}", "Content-Type": "application/json"},
-                json={"model": "tts-1-hd", "voice": "nova", "input": text},
-                stream=True,
-                timeout=30,
-            )
-            r.raise_for_status()
-            yield from r.iter_content(chunk_size=4096)
-        return StreamingResponse(_openai_stream(), media_type="audio/mpeg")
-
-    ds_key = os.getenv("DASHSCOPE_API_KEY")
-    ds_base = os.getenv("DASHSCOPE_BASE_URL", "")
-    if ds_key and "dashscope.aliyuncs.com" in ds_base:
-        try:
-            resp = await asyncio.to_thread(
-                req_lib.post,
-                "https://dashscope.aliyuncs.com/api/v1/services/aigc/text-to-speech/call",
-                headers={
-                    "Authorization": f"Bearer {ds_key}",
-                    "Content-Type": "application/json",
-                    "X-DashScope-SSE": "disable",
-                },
-                json={
-                    "model": "cosyvoice-v1",
-                    "input": {"text": text},
-                    "parameters": {"voice": "longxiaochun", "format": "mp3", "sample_rate": 22050},
-                },
-                timeout=30,
-            )
-            resp.raise_for_status()
-            ct = resp.headers.get("content-type", "")
-            if "audio" in ct:
-                return StreamingResponse(iter([resp.content]), media_type="audio/mpeg")
-            import base64
-            audio_b64 = resp.json().get("output", {}).get("audio", "")
-            if audio_b64:
-                return StreamingResponse(iter([base64.b64decode(audio_b64)]), media_type="audio/mpeg")
-        except Exception:
-            pass
-
-    raise HTTPException(status_code=404, detail="TTS not configured")

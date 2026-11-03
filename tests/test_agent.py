@@ -190,36 +190,26 @@ def _run_loop(tool_arguments, question):
     ]
     state = {"n": 0}
 
-    class _Resp:
-        def __init__(self, payload):
-            self._payload = payload
-
-        def raise_for_status(self):
-            pass
-
-        def json(self):
-            return self._payload
-
-    def _post(url, **kwargs):
-        messages = json.dumps(kwargs.get("json", {}).get("messages", []))
+    def _complete(body, config=None):
+        messages = json.dumps(body["messages"])
         if "retrieval quality evaluator" in messages:
-            return _Resp({"choices": [{"message": {"content": json.dumps({
+            return {"content": json.dumps({
                 "sufficient": False, "confidence": "low",
                 "gaps": "fit for a 175cm buyer", "next_action": "search_more",
-            })}}]})
+            })}
         message = script[min(state["n"], len(script) - 1)]
         state["n"] += 1
-        return _Resp({"choices": [{"message": message}]})
+        return message
 
-    original = R.req_lib
-    R.req_lib = types.SimpleNamespace(post=_post)
+    original = R.complete
+    R.complete = _complete
     try:
         return asyncio.run(R.react_loop(
             question=question, asin="P003", product=PRODUCT,
             history=[], user_context=_UserContext(),
         ))
     finally:
-        R.req_lib = original
+        R.complete = original
 
 
 def test_rewritten_query_reaches_the_tool_and_the_trace():
@@ -256,6 +246,7 @@ def test_conflict_is_injected_back_into_the_agent_context():
 # ── Live product page (browser extension) ────────────────────────────────────
 
 import agent.page as P  # noqa: E402
+from config.settings import LLMConfig  # noqa: E402
 
 
 def _payload(**overrides):
@@ -265,14 +256,19 @@ def _payload(**overrides):
     return types.SimpleNamespace(**fields)
 
 
-def _without_a_model(call):
-    """Run `call` with no API key visible, so the offline path is exercised."""
-    saved = {k: os.environ.pop(k) for k in ("DASHSCOPE_API_KEY", "HF_API_KEY")
-             if k in os.environ}
+def _with_llm(api_key, call):
+    """Run `call` with the page module seeing an LLM config with this key."""
+    original = P.LLM
+    P.LLM = LLMConfig(base_url="http://llm.invalid/v1", api_key=api_key, model="test", extra_body={})
     try:
         return call()
     finally:
-        os.environ.update(saved)
+        P.LLM = original
+
+
+def _without_a_model(call):
+    """Run `call` with no API key configured, so the offline path is exercised."""
+    return _with_llm(None, call)
 
 
 def test_page_answer_flags_the_listing_against_the_pages_own_reviews():
@@ -303,23 +299,14 @@ def test_page_answer_says_so_when_no_reviews_were_visible():
 
 
 def test_page_answer_uses_the_model_when_one_is_reachable():
-    class _Resp:
-        def raise_for_status(self):
-            pass
-
-        def json(self):
-            return {"choices": [{"message": {"content": "Likely runs small."}}]}
-
     payload = _payload(title="Tee", description="Relaxed fit.",
                        reviews=["Runs small, size up."])
-    original = P.req_lib
-    os.environ["DASHSCOPE_API_KEY"] = "test-key"
-    P.req_lib = types.SimpleNamespace(post=lambda url, **kw: _Resp())
+    original = P.complete
+    P.complete = lambda body, config=None: {"content": "Likely runs small."}
     try:
-        result = asyncio.run(P.answer_from_page(payload))
+        result = _with_llm("test-key", lambda: asyncio.run(P.answer_from_page(payload)))
     finally:
-        P.req_lib = original
-        os.environ.pop("DASHSCOPE_API_KEY", None)
+        P.complete = original
     assert result["source"] == "page_llm"
     assert result["answer"] == "Likely runs small."
 

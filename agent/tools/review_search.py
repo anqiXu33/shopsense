@@ -7,12 +7,11 @@ import asyncio
 import time
 from typing import Any, Dict, List, Optional
 
-from qdrant_client import QdrantClient
 from qdrant_client.models import Filter, FieldCondition, MatchValue, Range
 
 from agent.tools.base import BaseTool, ToolResult, ToolSchema, register_tool
 from core.embeddings import embed
-from config.settings import QDRANT_URL, QDRANT_API_KEY, QDRANT_COLLECTIONS
+from config.settings import QDRANT_COLLECTIONS, get_qdrant_client
 
 
 @register_tool
@@ -63,7 +62,7 @@ class SemanticReviewSearchTool(BaseTool):
     
     def __init__(self):
         super().__init__()
-        self.client = QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY)
+        self.client = get_qdrant_client()
         self.collection_name = QDRANT_COLLECTIONS["reviews"]
     
     async def execute(
@@ -72,7 +71,8 @@ class SemanticReviewSearchTool(BaseTool):
         asin: Optional[str] = None,
         filters: Optional[Dict[str, Any]] = None,
         top_k: int = 5,
-        group_by_asin: bool = False
+        group_by_asin: bool = False,
+        group_size: int = 3
     ) -> ToolResult:
         """Execute semantic review search."""
         start_time = time.time()
@@ -134,7 +134,7 @@ class SemanticReviewSearchTool(BaseTool):
                     query_filter=Filter(must=must_conditions) if must_conditions else None,
                     group_by="asin",
                     limit=top_k,
-                    group_size=3,
+                    group_size=group_size,
                     with_payload=True
                 )
                 
@@ -144,7 +144,9 @@ class SemanticReviewSearchTool(BaseTool):
                     reviews = []
                     for point in group.hits:
                         review = {
+                            "review_id": point.payload.get("review_id"),
                             "asin": point.payload.get("asin"),
+                            "title": point.payload.get("title"),
                             "text": point.payload.get("text"),
                             "rating": point.payload.get("rating"),
                             "sentiment": point.payload.get("sentiment"),
@@ -157,7 +159,7 @@ class SemanticReviewSearchTool(BaseTool):
                         reviews.append(review)
                     
                     groups.append({
-                        "asin": group.key,
+                        "asin": group.id,
                         "reviews": reviews,
                         "review_count": len(reviews)
                     })
@@ -191,7 +193,9 @@ class SemanticReviewSearchTool(BaseTool):
                 reviews = []
                 for point in results.points:
                     review = {
+                        "review_id": point.payload.get("review_id"),
                         "asin": point.payload.get("asin"),
+                        "title": point.payload.get("title"),
                         "text": point.payload.get("text"),
                         "rating": point.payload.get("rating"),
                         "sentiment": point.payload.get("sentiment"),

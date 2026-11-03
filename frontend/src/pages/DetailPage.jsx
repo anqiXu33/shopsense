@@ -1,603 +1,253 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useState, useEffect, useRef } from 'react'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useVoiceInput, voiceShortcutLabel } from '../hooks/useVoiceInput'
+import { useSpeech } from '../hooks/useSpeech'
+import { parseCommand } from '../voiceCommands'
+import { useSettings, format } from '../i18n'
+import { MicIcon } from './SearchPage'
 import { API_BASE } from '../api'
 
-const QUICK_QUESTIONS = [
-  'Is it suitable for -10°C weather?',
-  'Is it skin-sensitive friendly?',
-  'Do reviews mention shrinking?',
-  'Does the color match the photos?',
-  'Fits someone 175cm / 65kg?',
-]
-
-function MicIcon({ listening }) {
+function Evidence({ items, t }) {
+  if (items.length === 0) return null
   return (
-    <svg
-      width="20" height="20" viewBox="0 0 24 24"
-      fill="none" stroke="currentColor" strokeWidth="2"
-      strokeLinecap="round" strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      {listening ? (
-        <rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" stroke="none" />
-      ) : (
-        <>
-          <rect x="9" y="2" width="6" height="12" rx="3" />
-          <path d="M5 10a7 7 0 0 0 14 0" />
-          <line x1="12" y1="17" x2="12" y2="22" />
-          <line x1="9" y1="22" x2="15" y2="22" />
-        </>
-      )}
-    </svg>
+    <details className="evidence">
+      <summary>{format(t.sources, { n: items.length })}</summary>
+      <ul>
+        {items.map(e => (
+          <li key={e.review_id}>
+            <span className="evidence__stars">{format(t.stars, { r: e.rating })}</span>{' '}
+            <q lang="en">{e.text}</q>
+          </li>
+        ))}
+      </ul>
+    </details>
   )
 }
-
-// ── Agent Sub-panels ─────────────────────────────────────────────────────
-
-const TOOL_ICON = { review_search: '💬', knowledge_search: '📚', visual_search: '🖼️' }
-
-function ReActTracePanel({ trace }) {
-  if (!trace || trace.length === 0)
-    return <p style={{ color: 'var(--text-muted)', fontSize: '0.9375rem' }}>No data yet</p>
-
-  return (
-    <div role="list" aria-label="ReAct reasoning trace">
-      {trace.map((step, i) => (
-        <div key={i} className="react-step" role="listitem">
-          <span className="react-step__iter">Iter {step.iteration}</span>
-
-          {step.action === 'final_answer' && (
-            <span className="react-step__final react-step__final--ok">→ answered</span>
-          )}
-          {step.action === 'forced_final_answer' && (
-            <span className="react-step__final react-step__final--warn">→ forced answer</span>
-          )}
-
-          {step.actions && (
-            <div className="react-step__body">
-              <div className="react-step__actions">
-                {step.actions.map((a, j) => (
-                  <span key={j} className="tool-badge">
-                    {TOOL_ICON[a.tool] ?? '🔍'} {a.tool.replace('_search', '')}({a.limit})
-                    {a.query && (
-                      <span className="tool-badge__query">“{a.query}”</span>
-                    )}
-                  </span>
-                ))}
-              </div>
-              <div className="react-step__obs">
-                {step.observations?.map((o, j) => (
-                  <span key={j} className="react-obs">
-                    {o.results} res · {Math.round(o.score * 100)}% · {o.duration_ms}ms
-                  </span>
-                ))}
-              </div>
-              {step.reflection?.next_action === 'search_more' && (
-                <div className="react-step__reflection">
-                  <span className="react-step__next-action">→ search more</span>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      ))}
-    </div>
-  )
-}
-
-function ContextSignalsPanel({ trace }) {
-  const steps = (trace || []).filter(s => s.context_injection || s.reflection)
-  if (steps.length === 0)
-    return <p style={{ color: 'var(--text-muted)', fontSize: '0.9375rem' }}>No data yet</p>
-
-  return (
-    <div>
-      {steps.map((step, i) => (
-        <div key={i} style={{ marginBottom: i < steps.length - 1 ? '0.75rem' : 0 }}>
-          <span style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.04em' }}>
-            After iter {step.iteration}
-          </span>
-          {step.reflection?.gaps && step.reflection.gaps !== 'none' && step.reflection.gaps !== 'null' && (
-            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontStyle: 'italic', margin: '0.2rem 0 0.3rem' }}>
-              Gap: {step.reflection.gaps}
-            </div>
-          )}
-          {step.context_injection && (
-            <div className="react-step__injection" style={{ marginTop: '0.2rem' }}>
-              <span className="react-step__injection-label">↩</span>
-              {step.context_injection}
-            </div>
-          )}
-        </div>
-      ))}
-    </div>
-  )
-}
-
-function SessionContextPanel({ userCtx, messages }) {
-  // Last 2 full turns sent to the LLM (matches backend history[-4:])
-  const turns = []
-  const allMsgs = messages.slice(-4)
-  for (let i = 0; i < allMsgs.length - 1; i++) {
-    const m = allMsgs[i]
-    const next = allMsgs[i + 1]
-    if (m.role === 'user' && next.role === 'ai') {
-      turns.push({ q: m.content, summary: next.retrieval_summary })
-      i++ // skip the paired ai message
-    }
-  }
-
-  const slots = [
-    userCtx.height       && `Height: ${userCtx.height}cm`,
-    userCtx.weight       && `Weight: ${userCtx.weight}kg`,
-    userCtx.temp_target  && `Temp: ${userCtx.temp_target}`,
-    userCtx.skin_sensitive != null && `Skin sensitive: ${userCtx.skin_sensitive ? 'yes' : 'no'}`,
-  ].filter(Boolean)
-
-  return (
-    <div className="rq-panel">
-      <div className="rq-row">
-        <span className="rq-label">History in context</span>
-        <span className="rq-badge">{turns.length} turn{turns.length !== 1 ? 's' : ''}</span>
-      </div>
-
-      {turns.length > 0 ? (
-        <ul className="rq-hints" style={{ marginTop: '0.5rem' }}>
-          {turns.map((t, i) => (
-            <li key={i} style={{ marginBottom: '0.4rem' }}>
-              <span style={{ opacity: 0.7 }}>Q: </span>
-              <span>{t.q.length > 48 ? t.q.slice(0, 48) + '…' : t.q}</span>
-              {t.summary && (
-                <span className="react-obs" style={{ display: 'block', marginTop: '0.15rem' }}>
-                  {t.summary}
-                </span>
-              )}
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem', margin: '0.5rem 0 0 0' }}>
-          No prior turns in context
-        </p>
-      )}
-
-      {slots.length > 0 && (
-        <>
-          <div className="rq-row" style={{ marginTop: '0.75rem' }}>
-            <span className="rq-label">User profile</span>
-          </div>
-          <ul className="rq-hints">
-            {slots.map((s, i) => <li key={i}>{s}</li>)}
-          </ul>
-        </>
-      )}
-    </div>
-  )
-}
-
-const CONFIDENCE_LABEL = { high: '● High', medium: '◐ Medium', low: '○ Low' }
-
-function RetrievalQualityPanel({ trace, conflict }) {
-  const reflections = (trace || []).filter(s => s.reflection).map(s => ({
-    iteration: s.iteration,
-    ...s.reflection,
-  }))
-  if (reflections.length === 0 && !conflict)
-    return <p style={{ color: 'var(--text-muted)', fontSize: '0.9375rem' }}>No data yet</p>
-  return (
-    <div className="rq-panel">
-      {reflections.length > 0 && (
-        <div className="rq-row rq-row--conf">
-          <span className="rq-label">Confidence</span>
-          <span className="rq-conf-track">
-            {reflections.map((r, i) => (
-              <span key={i} className="rq-conf-step">
-                <span className="rq-conf-iter">iter {r.iteration}</span>
-                <span className={`rq-badge rq-badge--${r.confidence}`}>
-                  {CONFIDENCE_LABEL[r.confidence] ?? r.confidence}
-                </span>
-                {i < reflections.length - 1 && (
-                  <span className="rq-conf-arrow">→</span>
-                )}
-              </span>
-            ))}
-          </span>
-        </div>
-      )}
-      {conflict && (
-        <div className="rq-row">
-          <span className="rq-label">Consistency</span>
-          {conflict.has_conflict
-            ? <span className="rq-badge rq-badge--conflict">⚠ {conflict.details}</span>
-            : <span className="rq-badge rq-badge--ok">✓ No conflicts</span>}
-        </div>
-      )}
-    </div>
-  )
-}
-
-// ── Main Component ───────────────────────────────────────────────────────
 
 export default function DetailPage() {
   const { asin } = useParams()
+  const navigate = useNavigate()
+  const { lang, autoRead, t } = useSettings()
+  const { speak, stop, speakingId } = useSpeech(t.speechLang)
+
   const [product, setProduct] = useState(null)
-  const [loadingProduct, setLoadingProduct] = useState(true)
   const [productError, setProductError] = useState(null)
 
   const [messages, setMessages] = useState([])
   const [question, setQuestion] = useState('')
-  const [querying, setQuerying] = useState(false)
-  const [latestAgent, setLatestAgent] = useState(null)
-  const [agentOpen, setAgentOpen] = useState(false)
-  const [userContext, setUserContext] = useState({})
-
-  const [statusAssertive, setStatusAssertive] = useState('')
-  const [statusPolite, setStatusPolite] = useState('')
-
-  const [speaking, setSpeaking] = useState(false)
-  const [speakingMsgIdx, setSpeakingMsgIdx] = useState(null)
-  const [ttsLoading, setTtsLoading] = useState(false)
-  const [voiceStatus, setVoiceStatus] = useState('')
+  const [asking, setAsking] = useState(false)
+  const [status, setStatus] = useState('')
 
   const inputRef = useRef(null)
+  const headingRef = useRef(null)
   const chatLogRef = useRef(null)
-  const voicesRef = useRef([])
-  const audioRef = useRef(null)
-  const mountedRef = useRef(true)
 
-  const handleVoiceResult = useCallback(transcript => {
-    setQuestion(transcript)
-    setVoiceStatus(`Got it. Asking: ${transcript}`)
-    submitQuery(transcript)
-  }, []) // submitQuery is stable (defined below, uses refs internally)
+  // Highlights are rendered server-side in the selected language, so the
+  // product is refetched when the language changes.
+  useEffect(() => {
+    setProduct(null)
+    fetch(`${API_BASE}/api/products/${asin}?lang=${lang}`)
+      .then(r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`)
+        return r.json()
+      })
+      .then(setProduct)
+      .catch(err => setProductError(err.message))
+  }, [asin, lang])
 
-  const handleVoiceStart = useCallback(() => {
-    setVoiceStatus('Listening…')
-    setStatusAssertive('Listening for your question…')
-  }, [])
+  // Feature 1: on opening a product, move focus to its name and read the
+  // highlights aloud (unless auto-read is off, e.g. for screen-reader users).
+  useEffect(() => {
+    if (!product) return
+    headingRef.current?.focus()
+    if (autoRead) speak(product.highlights.speech, 'highlights')
+  }, [product]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleVoiceEnd = useCallback(() => {
-    setVoiceStatus('')
-    setStatusAssertive('')
-  }, [])
+  useEffect(() => {
+    if (chatLogRef.current) chatLogRef.current.scrollTop = chatLogRef.current.scrollHeight
+  }, [messages, asking])
+
+  async function ask(text, viaVoice) {
+    const q = text.trim()
+    if (!q || asking) return
+    stop()
+    setQuestion('')
+    setAsking(true)
+    setStatus(t.thinking)
+    setMessages(prev => [...prev, { role: 'user', content: q }])
+    try {
+      const res = await fetch(`${API_BASE}/api/ask`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ asin, question: q, lang }),
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`)
+      const data = await res.json()
+      setMessages(prev => [...prev, { role: 'ai', content: data.answer, evidence: data.evidence }])
+      setStatus('')
+      if (viaVoice || autoRead) speak(data.answer, `msg-${messages.length + 1}`)
+    } catch (err) {
+      setMessages(prev => [...prev, { role: 'ai', content: t.errorPrefix + err.message, evidence: [] }])
+      setStatus(t.errorPrefix + err.message)
+    } finally {
+      setAsking(false)
+      // The input is disabled while asking; focus it once it is enabled again.
+      setTimeout(() => inputRef.current?.focus(), 0)
+    }
+  }
+
+  function handleVoice(transcript) {
+    setStatus(format(t.heard, { t: transcript }))
+    const cmd = parseCommand(transcript)
+    if (cmd?.type === 'back') { stop(); navigate('/'); return }
+    if (cmd?.type === 'stop') { stop(); return }
+    if (cmd?.type === 'repeat') { speak(product.highlights.speech, 'highlights'); return }
+    if (cmd?.type === 'describe') { speak(product.appearance, 'appearance'); return }
+    ask(transcript, true)
+  }
 
   const { listening, start: startVoice, supported: voiceSupported } = useVoiceInput({
-    onResult: handleVoiceResult,
-    onStart: handleVoiceStart,
-    onEnd: handleVoiceEnd,
+    lang: t.speechLang,
+    onResult: handleVoice,
+    onStart: () => { stop(); setStatus(t.listening) },
     globalShortcut: true,
   })
 
-  useEffect(() => {
-    fetch(`${API_BASE}/api/products/${asin}`)
-      .then(r => {
-        if (!r.ok) throw new Error('商品不存在')
-        return r.json()
-      })
-      .then(data => { setProduct(data); setLoadingProduct(false) })
-      .catch(err => { setProductError(err.message); setLoadingProduct(false) })
-  }, [asin])
-
-  // Load best available browser voices
-  useEffect(() => {
-    function load() { voicesRef.current = speechSynthesis.getVoices() }
-    load()
-    speechSynthesis.addEventListener('voiceschanged', load)
-    return () => speechSynthesis.removeEventListener('voiceschanged', load)
-  }, [])
-
-  // Stop all TTS when leaving the page
-  useEffect(() => {
-    mountedRef.current = true
-    return () => {
-      mountedRef.current = false
-      speechSynthesis.cancel()
-      if (audioRef.current) {
-        audioRef.current.pause()
-        audioRef.current = null
-      }
-    }
-  }, [])
-
-  // Scroll chat to bottom on new messages
-  useEffect(() => {
-    if (chatLogRef.current) {
-      chatLogRef.current.scrollTop = chatLogRef.current.scrollHeight
-    }
-  }, [messages, querying])
-
-  function pickVoice(text) {
-    const isChinese = /[\u4e00-\u9fff]/.test(text)
-    const prefix = isChinese ? 'zh' : 'en'
-    const candidates = voicesRef.current.filter(v => v.lang.startsWith(prefix))
-    // Prefer neural / natural / enhanced voices (Edge, macOS, Windows all expose these)
-    const PREF = ['Natural', 'Neural', 'Online', 'Enhanced', 'Premium', 'Meijia', 'Xiaoxiao', 'Xiaoyi', 'Yunxi']
-    for (const p of PREF) {
-      const v = candidates.find(c => c.name.includes(p))
-      if (v) return v
-    }
-    return candidates[0] || null
-  }
-
-  function stopSpeaking() {
-    speechSynthesis.cancel()
-    if (audioRef.current) {
-      audioRef.current.pause()
-      audioRef.current = null
-    }
-    setSpeaking(false)
-    setSpeakingMsgIdx(null)
-    setTtsLoading(false)
-  }
-
-  async function speakText(text, idx) {
-    if (!mountedRef.current) return
-    if (speaking || ttsLoading) { stopSpeaking(); return }
-
-    setTtsLoading(true)
-    setSpeakingMsgIdx(idx)
-
-    // Try backend TTS (OpenAI tts-1-hd / DashScope CosyVoice)
-    try {
-      const res = await fetch(`${API_BASE}/api/tts/speech?text=${encodeURIComponent(text)}`)
-      if (res.ok) {
-        const blob = await res.blob()
-        const url = URL.createObjectURL(blob)
-        const audio = new Audio(url)
-        audioRef.current = audio
-        setTtsLoading(false)
-        setSpeaking(true)
-        audio.onended = () => { URL.revokeObjectURL(url); audioRef.current = null; setSpeaking(false); setSpeakingMsgIdx(null) }
-        audio.onerror = () => { setSpeaking(false); setSpeakingMsgIdx(null); setTtsLoading(false) }
-        audio.play()
-        return
-      }
-    } catch { /* fall through */ }
-
-    setTtsLoading(false)
-
-    // Browser TTS fallback — pick best available neural voice
-    const isChinese = /[\u4e00-\u9fff]/.test(text)
-    const utt = new SpeechSynthesisUtterance(text)
-    utt.lang = isChinese ? 'zh-CN' : 'en-US'
-    const voice = pickVoice(text)
-    if (voice) utt.voice = voice
-    utt.rate = 0.9
-    utt.pitch = 1.0
-    utt.onend = () => { setSpeaking(false); setSpeakingMsgIdx(null) }
-    setSpeaking(true)
-    speechSynthesis.speak(utt)
-  }
-
-  function extractSlots(text, prev) {
-    const updated = { ...prev }
-    const t = text.toLowerCase()
-    const heightMatch = text.match(/(\d{3})\s*cm/i) || text.match(/身高\s*(\d{3})/)
-    if (heightMatch) updated.height = parseInt(heightMatch[1])
-    const weightMatch = text.match(/(\d{2,3})\s*kg/i) || text.match(/体重\s*(\d{2,3})/)
-    if (weightMatch) updated.weight = parseInt(weightMatch[1])
-    const tempMatch = text.match(/-\s*(\d+)\s*[°℃c度]/) || text.match(/零下\s*(\d+)/)
-    if (tempMatch) updated.temp_target = `-${tempMatch[1]}°C`
-    if (/敏感肌|过敏|eczema|sensitive skin|skin sensitive/i.test(t)) updated.skin_sensitive = true
-    return updated
-  }
-
-  async function submitQuery(q) {
-    const text = (q ?? question).trim()
-    if (!text || querying) return
-
-    setQuestion('')
-    setQuerying(true)
-    setStatusAssertive('Querying, please wait…')
-
-    // Extract slots before updating messages (messages hasn't been updated yet)
-    const newContext = extractSlots(text, userContext)
-    if (JSON.stringify(newContext) !== JSON.stringify(userContext)) {
-      setUserContext(newContext)
-    }
-
-    // Snapshot current messages for history (before this turn is appended).
-    // For AI messages, prepend a retrieval summary so the LLM knows what was
-    // already searched in prior turns and avoids redundant searches.
-    const historySnapshot = messages.slice(-4).map(m => ({
-      role: m.role === 'ai' ? 'assistant' : 'user',
-      content: m.role === 'ai' && m.retrieval_summary
-        ? `[Retrieved: ${m.retrieval_summary}]\n${m.content}`
-        : m.content,
-    }))
-
-    setMessages(prev => [...prev, { role: 'user', content: text }])
-
-    try {
-      const res = await fetch(`${API_BASE}/api/query`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ asin, question: text, history: historySnapshot, user_context: newContext }),
-      })
-      if (!res.ok) throw new Error('Query failed')
-      const data = await res.json()
-
-      setMessages(prev => [...prev, { role: 'ai', content: data.answer, retrieval_summary: data.retrieval_summary, agentData: data }])
-      setLatestAgent(data)
-      setStatusAssertive('')
-      setStatusPolite(`Reply generated (${data.answer.length} characters)`)
-    } catch (err) {
-      setMessages(prev => [...prev, { role: 'ai', content: `Error: ${err.message}` }])
-      setStatusAssertive('')
-      setStatusPolite('Query failed')
-    } finally {
-      setQuerying(false)
-      setTimeout(() => inputRef.current?.focus(), 100)
-    }
-  }
-
-  async function handleImageTts() {
-    if (speaking) { stopSpeaking(); return }
-    try {
-      const res = await fetch(`${API_BASE}/api/tts?asin=${asin}`)
-      const data = await res.json()
-      if (mountedRef.current) speakText(data.answer, 'image')
-    } catch {
-      // silently fail TTS
-    }
-  }
-
-  if (loadingProduct) {
-    return <main id="main-content" className="page-loading" aria-busy="true">Loading…</main>
-  }
   if (productError) {
     return (
       <main id="main-content" className="page-error" role="alert">
-        Failed to load: {productError}
+        {format(t.loadFailed, { e: productError })}
       </main>
     )
   }
-  if (!product) return null
+  if (!product) {
+    return <main id="main-content" className="page-loading" aria-busy="true">{t.loading}</main>
+  }
 
-  const { name, brand, price, image_url, rating, review_count, description, attributes } = product
+  const { name, brand, price, image_url, rating, review_count, category, highlights, appearance, n_reviews } = product
+  const key = voiceShortcutLabel()
+  const readingHighlights = speakingId === 'highlights'
+  const readingAppearance = speakingId === 'appearance'
 
   return (
     <main id="main-content" className="page">
-      {/* Hidden live regions */}
-      <div aria-live="polite" aria-atomic="true" className="sr-only">
-        {statusAssertive}
-      </div>
-      <div aria-live="polite" aria-atomic="true" className="sr-only">
-        {statusPolite}
+      <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
+        {status}
       </div>
 
-      <Link to="/" className="back-link" aria-label="Back to product list">
-        ← Back
-      </Link>
+      <Link to="/" className="back-link" aria-label={t.backLabel}>{t.back}</Link>
 
       <div className="detail-layout">
-        {/* ── Left: Product Info ─────────────────────────────────── */}
-        <section aria-label="Product information">
-          <div className="detail-product">
-            {/* A button's aria-label replaces everything inside it, which hid the
-                image's own alt text. The image is plain again and the read-aloud
-                control sits over it as its own button. */}
+        {/* ── Left: product and its review highlights ─────────────── */}
+        <div>
+          <section className="detail-product" aria-labelledby="product-name">
             <div className="detail-product__image-wrap">
-              {image_url && image_url !== 'placeholder' ? (
-                <img
-                  src={image_url}
-                  alt={name}
-                  className="detail-product__image"
-                />
-              ) : (
-                <div className="detail-product__placeholder" aria-hidden="true">
-                  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <rect x="3" y="3" width="18" height="18" rx="2" />
-                    <circle cx="8.5" cy="8.5" r="1.5" />
-                    <path d="m21 15-5-5L5 21" />
-                  </svg>
-                </div>
-              )}
-              <button
-                type="button"
-                className="detail-product__tts-btn"
-                onClick={handleImageTts}
-                aria-pressed={speakingMsgIdx === 'image' && (speaking || ttsLoading)}
-                aria-label={
-                  speakingMsgIdx === 'image' && (speaking || ttsLoading)
-                    ? 'Stop reading the image description aloud'
-                    : 'Read a description of this image aloud'
-                }
-              >
-                <span aria-hidden="true">
-                  {ttsLoading && speakingMsgIdx === 'image' ? '⏳ Loading…' : speaking && speakingMsgIdx === 'image' ? '⏹ Stop' : '🔊 Describe image'}
-                </span>
-              </button>
+              <img src={image_url} alt="" className="detail-product__image" />
             </div>
-
             <div className="detail-product__info">
-              <h1 className="detail-product__name">{name}</h1>
-
+              <h1 id="product-name" className="detail-product__name" lang="en" tabIndex={-1} ref={headingRef}>
+                {name}
+              </h1>
               <p className="detail-product__field">
-                <span className="sr-only">Brand: </span>
-                {brand}
+                <span className="sr-only">{t.brand}</span><span lang="en">{brand}</span>
               </p>
-
               <p className="detail-product__price">
-                <span className="sr-only">Price: </span>
-                CHF {price.toFixed(2)}
+                <span className="sr-only">{t.price}</span>
+                {price == null ? t.noPrice : `$${price.toFixed(2)}`}
               </p>
-
               <p className="detail-product__field">
-                {/* Stars are decoration. Left exposed, a screen reader reads
-                    "black star black star black star"; the spoken version is a
-                    sentence instead. */}
                 <span aria-hidden="true">
                   {'★'.repeat(Math.round(rating))}{'☆'.repeat(5 - Math.round(rating))}
-                  {' '}{rating.toFixed(1)} — {review_count.toLocaleString()} reviews
+                  {' '}{rating.toFixed(1)} · {review_count.toLocaleString()}
                 </span>
                 <span className="sr-only">
-                  Rated {rating.toFixed(1)} out of 5, from {review_count.toLocaleString()} reviews
+                  {format(t.rating, { r: rating.toFixed(1), n: review_count.toLocaleString() })}
                 </span>
               </p>
-
-              {attributes?.material && (
-                <p className="detail-product__field">
-                  <span className="sr-only">Material: </span>
-                  {attributes.material}
-                </p>
-              )}
-
-              {attributes?.color && (
-                <p className="detail-product__field">
-                  <span className="sr-only">Color: </span>
-                  {attributes.color}
-                </p>
-              )}
+              <p className="detail-product__field">
+                <span className="sr-only">{t.category}</span><span lang="en">{category}</span>
+              </p>
             </div>
-          </div>
-        </section>
+          </section>
 
-        {/* ── Right: Q&A ─────────────────────────────────────────── */}
-        <section aria-label="AI shopping assistant Q&A" className="detail-qa">
-          {/* Chat log */}
+          <section className="highlights" aria-labelledby="highlights-title">
+            <div className="highlights__head">
+              <h2 id="highlights-title" className="highlights__title">{t.highlightsTitle}</h2>
+              <button
+                type="button"
+                className="quick-btn"
+                onClick={() => (readingHighlights ? stop() : speak(highlights.speech, 'highlights'))}
+                aria-pressed={readingHighlights}
+              >
+                <span aria-hidden="true">{readingHighlights ? '⏹ ' : '🔊 '}</span>
+                {readingHighlights ? t.stop : t.play}
+              </button>
+            </div>
+            <p className="highlights__note">{format(t.highlightsNote, { n: n_reviews })}</p>
+            {highlights.points.length === 0 ? (
+              <p>{highlights.speech}</p>
+            ) : (
+              <ul className="highlights__list">
+                {highlights.points.map(p => (
+                  <li key={p.aspect} className="highlight">
+                    <span className="highlight__label">{p.label}</span>
+                    <span className="highlight__text">{p.detail}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+
+          <section className="highlights" aria-labelledby="appearance-title">
+            <div className="highlights__head">
+              <h2 id="appearance-title" className="highlights__title">{t.appearanceTitle}</h2>
+              <button
+                type="button"
+                className="quick-btn"
+                onClick={() => (readingAppearance ? stop() : speak(appearance, 'appearance'))}
+                aria-pressed={readingAppearance}
+              >
+                <span aria-hidden="true">{readingAppearance ? '⏹ ' : '🔊 '}</span>
+                {readingAppearance ? t.stop : t.playAppearance}
+              </button>
+            </div>
+            <p className="highlights__note">{t.appearanceNote}</p>
+            <p className="appearance__text">{appearance}</p>
+          </section>
+        </div>
+
+        {/* ── Right: ask the reviews ─────────────────────────────────── */}
+        <section aria-labelledby="ask-title" className="detail-qa">
+          <h2 id="ask-title" className="highlights__title">{t.askTitle}</h2>
+
           <div
             ref={chatLogRef}
             role="log"
             aria-live="polite"
-            aria-label="Conversation history"
             aria-relevant="additions"
+            aria-labelledby="ask-title"
             className="chat-log"
           >
-            {messages.length === 0 && !querying && (
-              <p className="chat-empty">Ask the assistant for advice about this product.</p>
-            )}
-
             {messages.map((msg, i) => (
-              <div
-                key={i}
-                className={`chat-msg chat-msg--${msg.role}`}
-              >
-                <span className="chat-msg__label" aria-hidden="true">
-                  {msg.role === 'user' ? 'You' : 'ShopSense'}
+              <div key={i} className={`chat-msg chat-msg--${msg.role}`}>
+                <span className="chat-msg__label">
+                  {msg.role === 'user' ? t.you : t.assistant}
+                  <span className="sr-only">: </span>
                 </span>
                 {msg.role === 'ai' ? (
-                  /* The answer stays plain text. Wrapping it in a button made the
-                     button's aria-label the accessible name, so a screen reader
-                     announced "read this reply aloud" instead of the reply.
-                     Speaking is now a separate control beside the text. */
                   <div className="chat-msg__ai">
-                    <div className="chat-msg__bubble">{msg.content}</div>
+                    <div>
+                      <div className="chat-msg__bubble">{msg.content}</div>
+                      <Evidence items={msg.evidence} t={t} />
+                    </div>
                     <button
                       type="button"
                       className="chat-msg__speak"
-                      onClick={() => speakText(msg.content, i)}
-                      aria-pressed={speakingMsgIdx === i && (speaking || ttsLoading)}
-                      aria-label={
-                        speakingMsgIdx === i && (speaking || ttsLoading)
-                          ? 'Stop reading this reply aloud'
-                          : 'Read this reply aloud'
-                      }
+                      onClick={() => (speakingId === `msg-${i}` ? stop() : speak(msg.content, `msg-${i}`))}
+                      aria-pressed={speakingId === `msg-${i}`}
+                      aria-label={speakingId === `msg-${i}` ? t.stop : t.readAloud}
                     >
-                      <span aria-hidden="true">
-                        {ttsLoading && speakingMsgIdx === i ? '⏳' : speaking && speakingMsgIdx === i ? '⏹' : '🔊'}
-                      </span>
+                      <span aria-hidden="true">{speakingId === `msg-${i}` ? '⏹' : '🔊'}</span>
                     </button>
                   </div>
                 ) : (
@@ -605,137 +255,58 @@ export default function DetailPage() {
                 )}
               </div>
             ))}
-
-            {querying && (
-              <div className="chat-loading" aria-busy="true" role="status">
-                <span aria-hidden="true">⏳</span>
-                <span>Analyzing…</span>
+            {asking && (
+              <div className="chat-loading" aria-hidden="true">
+                <span>⏳</span> <span>{t.thinking}</span>
               </div>
             )}
           </div>
 
-          {/* Quick questions */}
-          <div
-            className="quick-questions"
-            role="group"
-            aria-label="Quick questions"
-          >
-            {QUICK_QUESTIONS.map(q => (
-              <button
-                key={q}
-                className="quick-btn"
-                onClick={() => submitQuery(q)}
-                disabled={querying}
-                aria-disabled={querying}
-              >
+          <div className="quick-questions" role="group" aria-label={t.askPlaceholder}>
+            {t.quick.map(q => (
+              <button key={q} type="button" className="quick-btn" onClick={() => ask(q, false)} disabled={asking}>
                 {q}
               </button>
             ))}
           </div>
 
-          {/* Input form */}
-          <form
-            className="query-form"
-            aria-label="Ask the assistant"
-            onSubmit={e => { e.preventDefault(); submitQuery() }}
-          >
+          <form className="query-form" onSubmit={e => { e.preventDefault(); ask(question, false) }}>
             <div className="query-form__field">
-              <label htmlFor="q-input" className="query-form__label">
-                Your question
-              </label>
-              {/* Voice status live region */}
-              <div aria-live="polite" aria-atomic="true" className="sr-only">
-                {voiceStatus}
-              </div>
+              <label htmlFor="q-input" className="query-form__label">{t.askLabel}</label>
               <div className="query-form__input-row">
                 <input
                   ref={inputRef}
                   id="q-input"
                   type="text"
                   className="query-form__input"
-                  placeholder="e.g. Is it warm enough for winter outdoor use?"
+                  placeholder={t.askPlaceholder}
                   value={question}
                   onChange={e => setQuestion(e.target.value)}
-                  disabled={querying}
-                  aria-disabled={querying}
+                  disabled={asking}
                   autoComplete="off"
-                  aria-describedby={voiceSupported ? 'voice-hint-detail' : undefined}
+                  aria-describedby="voice-help-detail"
                 />
                 {voiceSupported && (
                   <button
                     type="button"
                     className={`voice-btn${listening ? ' voice-btn--active' : ''}`}
                     onClick={startVoice}
-                    aria-label={listening ? 'Stop listening' : `Voice input (${voiceShortcutLabel()})`}
+                    aria-label={listening ? t.stopListening : format(t.voice, { key })}
                     aria-pressed={listening}
-                    disabled={querying}
+                    disabled={asking}
                   >
                     <MicIcon listening={listening} />
                   </button>
                 )}
               </div>
-              {voiceSupported && (
-                <p id="voice-hint-detail" className="sr-only">
-                  Press {voiceShortcutLabel()} to activate voice input. Your question will be submitted automatically.
-                </p>
-              )}
+              <p id="voice-help-detail" className="search-box__help">{t.voiceHelpDetail}</p>
             </div>
-            <button
-              type="submit"
-              className="query-form__submit"
-              disabled={querying || !question.trim()}
-              aria-label="Send question"
-            >
-              Send
+            <button type="submit" className="query-form__submit" disabled={asking || !question.trim()}>
+              {t.send}
             </button>
           </form>
         </section>
       </div>
-
-      {/* ── Agent Transparency Panel ──────────────────────────────── */}
-      <section className="agent-section" aria-label="Agent reasoning process">
-        <button
-          className="agent-toggle"
-          aria-expanded={agentOpen}
-          aria-controls="agent-panel-content"
-          onClick={() => setAgentOpen(v => !v)}
-        >
-          Agent Reasoning
-          <span className="agent-toggle__chevron" aria-hidden="true">
-            {agentOpen ? '▾' : '▸'}
-          </span>
-        </button>
-
-        {agentOpen && (
-          <div id="agent-panel-content" className="agent-body">
-            <div className="agent-grid">
-              <div className="agent-left-stack">
-                <div className="agent-subpanel">
-                  <h2 className="agent-subpanel__title">Retrieval Iterations</h2>
-                  <ReActTracePanel trace={latestAgent?.reasoning_trace} />
-                </div>
-
-                <div className="agent-subpanel">
-                  <h2 className="agent-subpanel__title">Session Context</h2>
-                  <SessionContextPanel userCtx={userContext} messages={messages} />
-                </div>
-              </div>
-
-              <div className="agent-right-stack">
-                <div className="agent-subpanel">
-                  <h2 className="agent-subpanel__title">Retrieval Signals</h2>
-                  <RetrievalQualityPanel trace={latestAgent?.reasoning_trace} conflict={latestAgent?.conflict_detection} />
-                </div>
-
-                <div className="agent-subpanel">
-                  <h2 className="agent-subpanel__title">Context Injected</h2>
-                  <ContextSignalsPanel trace={latestAgent?.reasoning_trace} />
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </section>
     </main>
   )
 }

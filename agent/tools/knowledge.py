@@ -7,12 +7,11 @@ import asyncio
 import time
 from typing import Any, Dict, List, Optional
 
-from qdrant_client import QdrantClient
 from qdrant_client.models import Filter, FieldCondition, MatchValue
 
 from agent.tools.base import BaseTool, ToolResult, ToolSchema, register_tool
 from core.embeddings import embed
-from config.settings import QDRANT_URL, QDRANT_API_KEY, QDRANT_COLLECTIONS
+from config.settings import QDRANT_COLLECTIONS, get_qdrant_client
 
 
 @register_tool
@@ -47,7 +46,7 @@ class KnowledgeRetrievalTool(BaseTool):
     
     def __init__(self):
         super().__init__()
-        self.client = QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY)
+        self.client = get_qdrant_client()
         self.collection_name = QDRANT_COLLECTIONS["knowledge"]
     
     async def execute(

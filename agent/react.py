@@ -12,11 +12,10 @@ Exports:
 
 import asyncio
 import json
-import os
 import re
 import time
 
-import requests as req_lib
+from core.llm import complete
 
 from agent.tools.review_search import SemanticReviewSearchTool
 from agent.tools.knowledge import KnowledgeRetrievalTool
@@ -344,9 +343,6 @@ async def _reflect(
     question: str,
     retrieved: dict,
     trace: list,
-    base_url: str,
-    api_key: str,
-    model: str,
 ) -> dict:
     """
     Lightweight LLM-based reflection: evaluate whether retrieved data is
@@ -388,13 +384,8 @@ async def _reflect(
     )
 
     try:
-        resp = await asyncio.to_thread(
-            req_lib.post,
-            f"{base_url}/chat/completions",
-            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
-            json={
-                "model": model,
-                "messages": [
+        message = await asyncio.to_thread(complete, {
+            "messages": [
                     {
                         "role": "system",
                         "content": (
@@ -405,14 +396,8 @@ async def _reflect(
                     },
                     {"role": "user", "content": prompt},
                 ],
-                "max_tokens": 100,
-                "temperature": 0.0,
-                "enable_thinking": False,
-            },
-            timeout=15,
-        )
-        resp.raise_for_status()
-        raw = resp.json()["choices"][0]["message"]["content"].strip()
+        })
+        raw = message["content"].strip()
         m = re.search(r"\{.*\}", raw, re.DOTALL)
         result = json.loads(m.group() if m else raw)
         return {
@@ -679,10 +664,6 @@ async def react_loop(
     ReAct loop: Think → Act (search) → Observe → repeat until confident or max_iter.
     Returns (answer, trace, retrieved_data).
     """
-    base_url = os.getenv("DASHSCOPE_BASE_URL", "https://api.groq.com/openai/v1")
-    api_key = os.getenv("DASHSCOPE_API_KEY") or os.getenv("HF_API_KEY")
-    model = os.getenv("TEXT_MODEL", "llama-3.3-70b-versatile")
-
     messages = [
         {"role": "system", "content": _build_react_system(product, user_context)},
         *history,
@@ -698,27 +679,15 @@ async def react_loop(
         tool_choice = "required" if iteration == 0 else "auto"
 
         try:
-            resp = await asyncio.to_thread(
-                req_lib.post,
-                f"{base_url}/chat/completions",
-                headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
-                json={
-                    "model": model,
-                    "messages": messages,
-                    "tools": _REACT_TOOL_DEFS,
-                    "tool_choice": tool_choice,
-                    "max_tokens": 400,
-                    "temperature": 0.3,
-                    "enable_thinking": False,
-                },
-                timeout=30,
-            )
-            resp.raise_for_status()
+            response_message = await asyncio.to_thread(complete, {
+                "messages": messages,
+                "tools": _REACT_TOOL_DEFS,
+                "tool_choice": tool_choice,
+            })
         except Exception as e:
             answer = f"[LLM Error] {e}"
             break
 
-        response_message = resp.json()["choices"][0]["message"]
         tool_calls = response_message.get("tool_calls", [])
 
         if not tool_calls:
@@ -794,9 +763,6 @@ async def react_loop(
                 question=question,
                 retrieved=retrieved,
                 trace=trace,
-                base_url=base_url,
-                api_key=api_key,
-                model=model,
             )
             trace[-1]["reflection"] = reflection
 
@@ -842,15 +808,8 @@ async def react_loop(
             )
         messages.append({"role": "user", "content": final_prompt})
         try:
-            resp = await asyncio.to_thread(
-                req_lib.post,
-                f"{base_url}/chat/completions",
-                headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
-                json={"model": model, "messages": messages, "max_tokens": 200, "temperature": 0.3, "enable_thinking": False},
-                timeout=20,
-            )
-            resp.raise_for_status()
-            answer = resp.json()["choices"][0]["message"].get("content", "").strip()
+            message = await asyncio.to_thread(complete, {"messages": messages})
+            answer = (message.get("content") or "").strip()
             trace.append({"iteration": max_iter + 1, "action": "forced_final_answer"})
         except Exception as e:
             answer = f"[LLM Error] {e}"

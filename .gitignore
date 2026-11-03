@@ -13,3 +13,8 @@ frontend/dist/
 # Local Claude Code settings: machine-specific, and past sessions have left
 # live API keys inside allow-list entries here.
 .claude/settings.local.json
+
+# Amazon Reviews 2023 raw file prefixes (re-downloaded by scripts/build_dataset.py)
+data/raw/
+# Embedded local Qdrant storage (rebuilt by scripts/ingest_all.py)
+data/qdrant/

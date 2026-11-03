@@ -14,11 +14,10 @@ Entry point: answer_from_page(payload) -> dict
 """
 
 import asyncio
-import os
-
-import requests as req_lib
 
 from agent.react import VOICE_RULES, _detect_conflicts
+from config.settings import LLM
+from core.llm import complete
 
 # The page can hand us an unbounded amount of text; keep the prompt sane.
 MAX_REVIEWS = 12
@@ -145,33 +144,16 @@ async def answer_from_page(payload) -> dict:
         "Describe this product and flag anything that does not add up."
     )
 
-    base_url = os.getenv("DASHSCOPE_BASE_URL", "https://api.groq.com/openai/v1")
-    api_key = os.getenv("DASHSCOPE_API_KEY") or os.getenv("HF_API_KEY")
-    model = os.getenv("TEXT_MODEL", "llama-3.3-70b-versatile")
-
     answer, source = "", "page_only"
-    if api_key:
+    if LLM.api_key:
         try:
-            resp = await asyncio.to_thread(
-                req_lib.post,
-                f"{base_url}/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {api_key}",
-                    "Content-Type": "application/json",
-                },
-                json={
-                    "model": model,
-                    "messages": [
-                        {"role": "system", "content": build_prompt(product, reviews, conflict)},
-                        {"role": "user", "content": question},
-                    ],
-                    "max_tokens": 220,
-                    "temperature": 0.3,
-                },
-                timeout=25,
-            )
-            resp.raise_for_status()
-            answer = (resp.json()["choices"][0]["message"].get("content") or "").strip()
+            message = await asyncio.to_thread(complete, {
+                "messages": [
+                    {"role": "system", "content": build_prompt(product, reviews, conflict)},
+                    {"role": "user", "content": question},
+                ],
+            })
+            answer = (message.get("content") or "").strip()
             if answer:
                 source = "page_llm"
         except Exception:

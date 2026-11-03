@@ -16,14 +16,13 @@ Entry point: run_legacy_query(req, client) -> dict
 
 import asyncio
 import json
-import os
 import time
 
-import requests as req_lib
 from qdrant_client import QdrantClient
 from qdrant_client.models import Filter, FieldCondition, MatchValue
 
 from config.settings import QDRANT_COLLECTIONS
+from core.llm import complete
 from core.embeddings import embed
 from agent.react import _first_sentence, _detect_conflicts
 
@@ -265,30 +264,16 @@ _TOOL_SELECTION_SYSTEM = (
 
 async def select_tools_llm(question: str):
     """LLM function-calling tool selection. Falls back to rule-based on error."""
-    base_url = os.getenv("DASHSCOPE_BASE_URL", "https://api.groq.com/openai/v1")
-    api_key = os.getenv("DASHSCOPE_API_KEY") or os.getenv("HF_API_KEY")
-    model = os.getenv("TEXT_MODEL", "llama-3.3-70b-versatile")
-
     try:
-        resp = await asyncio.to_thread(
-            req_lib.post,
-            f"{base_url}/chat/completions",
-            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
-            json={
-                "model": model,
-                "messages": [
-                    {"role": "system", "content": _TOOL_SELECTION_SYSTEM},
-                    {"role": "user", "content": question},
-                ],
-                "tools": _TOOL_DEFS,
-                "tool_choice": "required",
-                "max_tokens": 300,
-                "temperature": 0.0,
-            },
-            timeout=15,
-        )
-        resp.raise_for_status()
-        tool_calls = resp.json()["choices"][0]["message"].get("tool_calls", [])
+        message = await asyncio.to_thread(complete, {
+            "messages": [
+                {"role": "system", "content": _TOOL_SELECTION_SYSTEM},
+                {"role": "user", "content": question},
+            ],
+            "tools": _TOOL_DEFS,
+            "tool_choice": "required",
+        })
+        tool_calls = message.get("tool_calls", [])
         if not tool_calls:
             raise ValueError("LLM returned no tool calls")
 
@@ -555,30 +540,16 @@ async def run_legacy_query(req, client: QdrantClient) -> dict:
     context = "\n\n".join(context_parts)
 
     # LLM call
-    base_url = os.getenv("DASHSCOPE_BASE_URL", "https://api.groq.com/openai/v1")
-    api_key = os.getenv("DASHSCOPE_API_KEY") or os.getenv("HF_API_KEY")
-    model = os.getenv("TEXT_MODEL", "llama-3.3-70b-versatile")
-
     answer = "[Error] LLM not configured."
     try:
-        resp = await asyncio.to_thread(
-            req_lib.post,
-            f"{base_url}/chat/completions",
-            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
-            json={
-                "model": model,
-                "messages": [
-                    {"role": "system", "content": context},
-                    *req.history[-6:],
-                    {"role": "user", "content": req.question},
-                ],
-                "max_tokens": 160,
-                "temperature": 0.5,
-            },
-            timeout=60,
-        )
-        resp.raise_for_status()
-        answer = resp.json()["choices"][0]["message"]["content"].strip()
+        message = await asyncio.to_thread(complete, {
+            "messages": [
+                {"role": "system", "content": context},
+                *req.history[-6:],
+                {"role": "user", "content": req.question},
+            ],
+        })
+        answer = message["content"].strip()
     except Exception as e:
         answer = f"[LLM Error] {e}"
 

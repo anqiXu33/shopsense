@@ -1,0 +1,853 @@
+{
+ "k": 5,
+ "runs": {
+  "bm25_en": {
+   "q01": [
+    "B01MYGURYK",
+    "B01HGVY0TM",
+    "B071JMD8NJ",
+    "B006H30L3K",
+    "B0072GC6L6"
+   ],
+   "q02": [
+    "B00IY8MNSW",
+    "B000Q941ZU",
+    "B014UVX31C",
+    "B00LFAXBVO",
+    "B000HDNWFK"
+   ],
+   "q03": [
+    "B000VQFLPW",
+    "B01CO1EVWK",
+    "B01HF9ZN7I",
+    "B01HGVY0TM",
+    "B01FZLGAPW"
+   ],
+   "q04": [
+    "B01HEADZSW",
+    "B078HD5ZQK",
+    "B00QILNEVC",
+    "B07BZZ33R6",
+    "B01MAY8YTA"
+   ],
+   "q05": [
+    "B00UAIKMCI",
+    "B01IIPVTGC",
+    "B078HDBP3C",
+    "B00HDK1POK",
+    "B07BZZ33R6"
+   ],
+   "q06": [
+    "B01IB0KKN2",
+    "B07568JYPN",
+    "B000ARJGC6",
+    "B01M17LSEE",
+    "B0067TZ1D4"
+   ],
+   "q07": [
+    "B07CKS1ZWW",
+    "B0078J8BF2",
+    "B009VZLAPY",
+    "B00D7IDIP6",
+    "B071VCTK8W"
+   ],
+   "q08": [
+    "B00MDKWT1I",
+    "B000H100IE",
+    "B0078J8BF2",
+    "B075XJC2D9",
+    "B07B9S5YLH"
+   ],
+   "q09": [
+    "B0017L7ZR2",
+    "B00ASJ8OPG",
+    "B07535XTZP",
+    "B00I5IGWQ0",
+    "B013J9XJ38"
+   ],
+   "q10": [
+    "B01MDJ3FW5",
+    "B016UP2TY8",
+    "B000H100IE",
+    "B005EP1FCS",
+    "B008M4Z8E4"
+   ],
+   "q11": [
+    "B002OHE4D6",
+    "B0067TZ1D4",
+    "B00W7WYT4W",
+    "B002CO3LM6",
+    "B01J2RZYXY"
+   ],
+   "q12": [
+    "B072KTJFPB",
+    "B002CO3LM6",
+    "B0055ATVUU",
+    "B0128H3RIO",
+    "B01J2RZYXY"
+   ],
+   "q13": [
+    "B01J2RZYXY",
+    "B00NR41ASW",
+    "B06Y6JDN2P",
+    "B001OQBN96",
+    "B00D8FMON0"
+   ],
+   "q14": [
+    "B01HGVY0TM",
+    "B00XA01UQK",
+    "B00IY8MNSW",
+    "B008JE8WUY",
+    "B01N2GM1SM"
+   ],
+   "q15": [
+    "B002OHE4JK",
+    "B000ARKMQA",
+    "B000BVZYYA",
+    "B00B1I5V4U",
+    "B076JJ8N5F"
+   ],
+   "q16": [
+    "B00HDK1POK",
+    "B01MYUCJBF",
+    "B01NBAULY4",
+    "B01AT3FA9I",
+    "B013J9XJ38"
+   ],
+   "q17": [
+    "B003OYJ7CQ",
+    "B00PY31GSI",
+    "B00UOWREB2",
+    "B071JMD8NJ",
+    "B01MYGURYK"
+   ],
+   "q18": [
+    "B00VNKAA9W",
+    "B00UOWREB2",
+    "B002COHZ3M",
+    "B0753J399N",
+    "B07535XTZP"
+   ],
+   "q19": [
+    "B078HDBP3C",
+    "B01MYUCJBF",
+    "B01N2GM1SM",
+    "B00E8FRE2K",
+    "B0017L7ZR2"
+   ],
+   "q20": [
+    "B01IBZJ9IY",
+    "B07CKS1ZWW",
+    "B06XPFG2HK",
+    "B01NBAULY4",
+    "B01AH00BOW"
+   ],
+   "q21": [
+    "B01MQKBHVJ",
+    "B07BTF9G3X",
+    "B01MRZPT9E",
+    "B015SSPRAQ",
+    "B00E8FRE2K"
+   ],
+   "q22": [
+    "B005CMIIBY",
+    "B00DZL23D8",
+    "B01FXKH2P2",
+    "B078GSXGWZ",
+    "B000AS5GLK"
+   ],
+   "q23": [
+    "B0017H5ECE",
+    "B07C1Z3TKP",
+    "B07B5RGY2N",
+    "B005DJ227C",
+    "B00UZ2Y92I"
+   ],
+   "q24": [
+    "B071VCTK8W",
+    "B07CMK6PYR",
+    "B07CNTN21B",
+    "B079BVLDPV",
+    "B003O2SLXY"
+   ],
+   "q25": [
+    "B00JA7TRXK",
+    "B0041FHZAS",
+    "B008GRM6UG",
+    "B002OHE4I6",
+    "B01FSIKPNK"
+   ],
+   "q26": [
+    "B01MDJ3FW5",
+    "B01MYGURYK",
+    "B0756YW7BH",
+    "B00L522Z0U",
+    "B07B9S5YLH"
+   ],
+   "q27": [
+    "B07CNTN21B",
+    "B01N2GM1SM",
+    "B0012G6KX2",
+    "B015XJSXEC",
+    "B003LN0HG0"
+   ],
+   "q28": [
+    "B002OHE4JK",
+    "B01CO1EVWK",
+    "B01FXKH2P2",
+    "B002P66J20",
+    "B004EIHD18"
+   ],
+   "q29": [
+    "B0054P9AM0",
+    "B01FZLGAPW",
+    "B0041FHZAS",
+    "B077YBMLFH",
+    "B01HF9ZNAA"
+   ],
+   "q30": [
+    "B0012HT9AM",
+    "B00E8FRE2K",
+    "B078HD5ZQK",
+    "B00IY8MNSW",
+    "B000BO5F9Q"
+   ]
+  },
+  "vector_en_all": {
+   "q01": [
+    "B015XJSXEC",
+    "B01MU2XM13",
+    "B077YBMLFH",
+    "B0798KVB4Y",
+    "B01HGVY0TM"
+   ],
+   "q02": [
+    "B005DVY6B0",
+    "B005EP1FCS",
+    "B00IY8MNSW",
+    "B078WH536F",
+    "B00D7IDIP6"
+   ],
+   "q03": [
+    "B01HF9ZN7I",
+    "B075XJC2D9",
+    "B01HGVY0TM",
+    "B00H4YC0GC",
+    "B002JVWOO8"
+   ],
+   "q04": [
+    "B00I8T22FG",
+    "B00HDK1POK",
+    "B005HMTPBG",
+    "B00L5FY6HC",
+    "B07BZZ33R6"
+   ],
+   "q05": [
+    "B005UVNE9S",
+    "B06Y6JDN2P",
+    "B01ACF08HW",
+    "B071JMD8NJ",
+    "B074P1XR97"
+   ],
+   "q06": [
+    "B01AH00BOW",
+    "B01AMSKJ7S",
+    "B00L4TP3NK",
+    "B07CMK6PYR",
+    "B008GRM6UG"
+   ],
+   "q07": [
+    "B078HGYHPQ",
+    "B00IKD8YE8",
+    "B000AS7F9G",
+    "B071RB9GW7",
+    "B073TN9575"
+   ],
+   "q08": [
+    "B00MDKWT1I",
+    "B075XJC2D9",
+    "B0078J8BF2",
+    "B01HF9ZN7I",
+    "B01DFP74Z0"
+   ],
+   "q09": [
+    "B017CUBWJS",
+    "B00VNKAA9W",
+    "B002P66J20",
+    "B002CQTZH4",
+    "B00D7IDIP6"
+   ],
+   "q10": [
+    "B01MDJ3FW5",
+    "B0054P9AM0",
+    "B01HF9ZLNO",
+    "B01HF9ZNAA",
+    "B00D7CHAEW"
+   ],
+   "q11": [
+    "B00D0UKPF2",
+    "B073TN9575",
+    "B0128H3RIO",
+    "B002OHE3DC",
+    "B00W7WYT4W"
+   ],
+   "q12": [
+    "B001OQBN96",
+    "B00W7WYT4W",
+    "B015SSPRAQ",
+    "B01FH9BPP2",
+    "B01IB0KKN2"
+   ],
+   "q13": [
+    "B074HHJYGW",
+    "B00IKD8YE8",
+    "B00D8FMON0",
+    "B0012G6KX2",
+    "B00MIFVYSC"
+   ],
+   "q14": [
+    "B003YBQ2E0",
+    "B01FSIKPNK",
+    "B01AH00BLA",
+    "B003O2SLXY",
+    "B01BF3WUP8"
+   ],
+   "q15": [
+    "B01HF9ZNAA",
+    "B002OHE4JK",
+    "B01GB41SBS",
+    "B000M25WV8",
+    "B07CD5F6TM"
+   ],
+   "q16": [
+    "B00HDK1POK",
+    "B07C2KSHC7",
+    "B002JVWOO8",
+    "B013J9XJ38",
+    "B06XPFG2HK"
+   ],
+   "q17": [
+    "B071JMD8NJ",
+    "B01M0W56E4",
+    "B01HSM5RU0",
+    "B077YBMLFH",
+    "B01MU2XM13"
+   ],
+   "q18": [
+    "B00IY8MNSW",
+    "B01M17LSEE",
+    "B002COHZ3M",
+    "B004WJBZ54",
+    "B00VNKAA9W"
+   ],
+   "q19": [
+    "B00E8FRE2K",
+    "B07B5RGY2N",
+    "B0169V0FVC",
+    "B008HDZ4ZS",
+    "B00GRSZCIO"
+   ],
+   "q20": [
+    "B01HEAE6GW",
+    "B007AAYWZC",
+    "B01M0W56E4",
+    "B014UVX31C",
+    "B000OYQOCK"
+   ],
+   "q21": [
+    "B07BTF9G3X",
+    "B01HEAE1DA",
+    "B005CMIIBY",
+    "B00I8T22FG",
+    "B003UHUM5S"
+   ],
+   "q22": [
+    "B06Y6JDN2P",
+    "B005CMIIBY",
+    "B078GSXGWZ",
+    "B013J9XJ38",
+    "B000BO5F9Q"
+   ],
+   "q23": [
+    "B003UHUM5S",
+    "B00605L38M",
+    "B076DFN3P7",
+    "B00Q2JC290",
+    "B07B5RGY2N"
+   ],
+   "q24": [
+    "B07CMK6PYR",
+    "B00RE2VZHO",
+    "B01D4ERLA0",
+    "B079BVLDPV",
+    "B01HEAE6GW"
+   ],
+   "q25": [
+    "B01FSIKPNK",
+    "B006MNXS9O",
+    "B013J9XJ38",
+    "B01N5MV6DU",
+    "B06XD4V6RD"
+   ],
+   "q26": [
+    "B078GPLYJB",
+    "B07B9S5YLH",
+    "B07CG2XTK9",
+    "B07BTF9G3X",
+    "B00413QUHE"
+   ],
+   "q27": [
+    "B00I8T22FG",
+    "B000HDNWFK",
+    "B003LN0HG0",
+    "B015IIHVIC",
+    "B01HSMYV8E"
+   ],
+   "q28": [
+    "B0023RRTWU",
+    "B002OHE4JK",
+    "B00V3N6QYM",
+    "B01HF9ZLNO",
+    "B014K5ZLOA"
+   ],
+   "q29": [
+    "B01MU2XM13",
+    "B015XJSXEC",
+    "B077YBMLFH",
+    "B077Y1NXD6",
+    "B01FZLGAPW"
+   ],
+   "q30": [
+    "B00IY8MNSW",
+    "B0054P9AM0",
+    "B074P1XR97",
+    "B078HDBP3C",
+    "B01FZLGAPW"
+   ]
+  },
+  "vector_en": {
+   "q01": [
+    "B015XJSXEC",
+    "B01MU2XM13",
+    "B077YBMLFH",
+    "B00421BLAG",
+    "B071JMD8NJ"
+   ],
+   "q02": [
+    "B005DVY6B0",
+    "B005EP1FCS",
+    "B00IY8MNSW",
+    "B078WH536F",
+    "B00D7IDIP6"
+   ],
+   "q03": [
+    "B01HF9ZN7I",
+    "B075XJC2D9",
+    "B01HGVY0TM",
+    "B00H4YC0GC",
+    "B002JVWOO8"
+   ],
+   "q04": [
+    "B00I8T22FG",
+    "B00HDK1POK",
+    "B005HMTPBG",
+    "B00L5FY6HC",
+    "B07BZZ33R6"
+   ],
+   "q05": [
+    "B005UVNE9S",
+    "B06Y6JDN2P",
+    "B01ACF08HW",
+    "B071JMD8NJ",
+    "B074P1XR97"
+   ],
+   "q06": [
+    "B01AH00BOW",
+    "B01AMSKJ7S",
+    "B00L4TP3NK",
+    "B07CMK6PYR",
+    "B008GRM6UG"
+   ],
+   "q07": [
+    "B078HGYHPQ",
+    "B00IKD8YE8",
+    "B071RB9GW7",
+    "B073TN9575",
+    "B00828VKFQ"
+   ],
+   "q08": [
+    "B00MDKWT1I",
+    "B075XJC2D9",
+    "B0078J8BF2",
+    "B01HF9ZN7I",
+    "B01DFP74Z0"
+   ],
+   "q09": [
+    "B00VNKAA9W",
+    "B002P66J20",
+    "B002CQTZH4",
+    "B00D7IDIP6",
+    "B000AS5GH4"
+   ],
+   "q10": [
+    "B01MDJ3FW5",
+    "B0054P9AM0",
+    "B01HF9ZLNO",
+    "B01HF9ZNAA",
+    "B00D7CHAEW"
+   ],
+   "q11": [
+    "B00D0UKPF2",
+    "B073TN9575",
+    "B0128H3RIO",
+    "B002OHE3DC",
+    "B00W7WYT4W"
+   ],
+   "q12": [
+    "B001OQBN96",
+    "B00W7WYT4W",
+    "B015SSPRAQ",
+    "B01FH9BPP2",
+    "B01IB0KKN2"
+   ],
+   "q13": [
+    "B074HHJYGW",
+    "B0012G6KX2",
+    "B00D8FMON0",
+    "B00MIFVYSC",
+    "B017CUBWJS"
+   ],
+   "q14": [
+    "B003YBQ2E0",
+    "B01FSIKPNK",
+    "B01AH00BLA",
+    "B003O2SLXY",
+    "B01BF3WUP8"
+   ],
+   "q15": [
+    "B01HF9ZNAA",
+    "B002OHE4JK",
+    "B01GB41SBS",
+    "B07CD5F6TM",
+    "B00D7IDIP6"
+   ],
+   "q16": [
+    "B00HDK1POK",
+    "B07C2KSHC7",
+    "B002JVWOO8",
+    "B013J9XJ38",
+    "B06XPFG2HK"
+   ],
+   "q17": [
+    "B071JMD8NJ",
+    "B01M0W56E4",
+    "B01HSM5RU0",
+    "B077YBMLFH",
+    "B003OYJ7CQ"
+   ],
+   "q18": [
+    "B00IY8MNSW",
+    "B01M17LSEE",
+    "B002COHZ3M",
+    "B004WJBZ54",
+    "B00VNKAA9W"
+   ],
+   "q19": [
+    "B07B5RGY2N",
+    "B008HDZ4ZS",
+    "B0041FHZAS",
+    "B017CUBWJS",
+    "B071GMY3BC"
+   ],
+   "q20": [
+    "B01HEAE6GW",
+    "B007AAYWZC",
+    "B01M0W56E4",
+    "B014UVX31C",
+    "B000OYQOCK"
+   ],
+   "q21": [
+    "B07BTF9G3X",
+    "B01HEAE1DA",
+    "B005CMIIBY",
+    "B003UHUM5S",
+    "B000M25WV8"
+   ],
+   "q22": [
+    "B06Y6JDN2P",
+    "B005CMIIBY",
+    "B078GSXGWZ",
+    "B013J9XJ38",
+    "B000BO5F9Q"
+   ],
+   "q23": [
+    "B003UHUM5S",
+    "B00Q2JC290",
+    "B000HDNWFK",
+    "B01IB0KKN2",
+    "B005DJ227C"
+   ],
+   "q24": [
+    "B07CMK6PYR",
+    "B00RE2VZHO",
+    "B079BVLDPV",
+    "B01HEAE6GW",
+    "B01D4ERLA0"
+   ],
+   "q25": [
+    "B01FSIKPNK",
+    "B006MNXS9O",
+    "B013J9XJ38",
+    "B01N5MV6DU",
+    "B06XD4V6RD"
+   ],
+   "q26": [
+    "B07B9S5YLH",
+    "B07CG2XTK9",
+    "B07BTF9G3X",
+    "B076HY8LM7",
+    "B01MYGURYK"
+   ],
+   "q27": [
+    "B00I8T22FG",
+    "B003LN0HG0",
+    "B01HSMYV8E",
+    "B01MYUCJBF",
+    "B01MYGURYK"
+   ],
+   "q28": [
+    "B0023RRTWU",
+    "B002OHE4JK",
+    "B00V3N6QYM",
+    "B01HF9ZLNO",
+    "B014K5ZLOA"
+   ],
+   "q29": [
+    "B01MU2XM13",
+    "B015XJSXEC",
+    "B077YBMLFH",
+    "B077Y1NXD6",
+    "B01FZLGAPW"
+   ],
+   "q30": [
+    "B00IY8MNSW",
+    "B0054P9AM0",
+    "B074P1XR97",
+    "B078HDBP3C",
+    "B01FZLGAPW"
+   ]
+  },
+  "vector_zh": {
+   "q01": [
+    "B015XJSXEC",
+    "B01MU2XM13",
+    "B01MYGURYK",
+    "B077YBMLFH",
+    "B071JMD8NJ"
+   ],
+   "q02": [
+    "B005DVY6B0",
+    "B005EP1FCS",
+    "B00D7IDIP6",
+    "B078WH536F",
+    "B0798KVB4Y"
+   ],
+   "q03": [
+    "B075XJC2D9",
+    "B00H4YC0GC",
+    "B01HF9ZN7I",
+    "B01HGVY0TM",
+    "B07B6L1SNW"
+   ],
+   "q04": [
+    "B00I8T22FG",
+    "B00HDK1POK",
+    "B005HMTPBG",
+    "B00L5FY6HC",
+    "B078HDBP3C"
+   ],
+   "q05": [
+    "B06Y6JDN2P",
+    "B005UVNE9S",
+    "B071JMD8NJ",
+    "B01ACF08HW",
+    "B00413QUHE"
+   ],
+   "q06": [
+    "B01AH00BOW",
+    "B00L4TP3NK",
+    "B0012HR2I8",
+    "B000ARJGC6",
+    "B01AMSKJ7S"
+   ],
+   "q07": [
+    "B001EJMRKW",
+    "B00IKD8YE8",
+    "B009VZLAPY",
+    "B078HGYHPQ",
+    "B00UKCY3MY"
+   ],
+   "q08": [
+    "B00MDKWT1I",
+    "B075XJC2D9",
+    "B0078J8BF2",
+    "B01HF9ZN7I",
+    "B01HGVY0TM"
+   ],
+   "q09": [
+    "B01BF3WUP8",
+    "B002CQTZH4",
+    "B071RB9GW7",
+    "B00VNKAA9W",
+    "B07B9S5YLH"
+   ],
+   "q10": [
+    "B00W7WYT4W",
+    "B076DFN3P7",
+    "B00Q0CCM30",
+    "B003KTM9CA",
+    "B0163IMBZ4"
+   ],
+   "q11": [
+    "B00W7WYT4W",
+    "B01J2RZYXY",
+    "B073TN9575",
+    "B0128H3RIO",
+    "B00D0UKPF2"
+   ],
+   "q12": [
+    "B00W7WYT4W",
+    "B001OQBN96",
+    "B015SSPRAQ",
+    "B01FH9BPP2",
+    "B073TN9575"
+   ],
+   "q13": [
+    "B074HHJYGW",
+    "B005CMIIBY",
+    "B00D8FMON0",
+    "B07BNJ44VJ",
+    "B00J0RX7TU"
+   ],
+   "q14": [
+    "B01FSIKPNK",
+    "B01AH00BLA",
+    "B003YBQ2E0",
+    "B003O2SLXY",
+    "B01BF3WUP8"
+   ],
+   "q15": [
+    "B002OHE4JK",
+    "B076JJ8N5F",
+    "B01ND4DEH1",
+    "B000OYQOCK",
+    "B074P1XR97"
+   ],
+   "q16": [
+    "B00HDK1POK",
+    "B07C2KSHC7",
+    "B073TN9575",
+    "B01AT3FA9I",
+    "B06XD4V6RD"
+   ],
+   "q17": [
+    "B01HSMYV8E",
+    "B071JMD8NJ",
+    "B01HSM5RU0",
+    "B077YBMLFH",
+    "B00421BLAG"
+   ],
+   "q18": [
+    "B002COHZ3M",
+    "B01M17LSEE",
+    "B00IY8MNSW",
+    "B006H30L3K",
+    "B01ACF08HW"
+   ],
+   "q19": [
+    "B07B5RGY2N",
+    "B014K5ZLOA",
+    "B01HEAE6GW",
+    "B0054P9AM0",
+    "B00GRSZCIO"
+   ],
+   "q20": [
+    "B07535XTZP",
+    "B00V3ML4MW",
+    "B078GSXGWZ",
+    "B005DVY6B0",
+    "B000VQFLPW"
+   ],
+   "q21": [
+    "B000BO5F9Q",
+    "B07C1DL94B",
+    "B003UHUM5S",
+    "B00I5IGWQ0",
+    "B07BTF9G3X"
+   ],
+   "q22": [
+    "B005CMIIBY",
+    "B06Y6JDN2P",
+    "B078GSXGWZ",
+    "B000BO5F9Q",
+    "B0163IMBZ4"
+   ],
+   "q23": [
+    "B003UHUM5S",
+    "B00V3ML4MW",
+    "B01IB0KKN2",
+    "B00Q2JC290",
+    "B0012G6KX2"
+   ],
+   "q24": [
+    "B07CMK6PYR",
+    "B01HEAE6GW",
+    "B00RE2VZHO",
+    "B079BVLDPV",
+    "B071VCTK8W"
+   ],
+   "q25": [
+    "B01FSIKPNK",
+    "B076HY8LM7",
+    "B0026MRNGO",
+    "B06XD4V6RD",
+    "B01N5MV6DU"
+   ],
+   "q26": [
+    "B07B9S5YLH",
+    "B07C1Z3TKP",
+    "B07CG2XTK9",
+    "B07BTF9G3X",
+    "B01MYGURYK"
+   ],
+   "q27": [
+    "B01HSMYV8E",
+    "B00I8T22FG",
+    "B01MYUCJBF",
+    "B003LN0HG0",
+    "B0012HR2I8"
+   ],
+   "q28": [
+    "B0023RRTWU",
+    "B01FSIKPNK",
+    "B01FXKH2P2",
+    "B005EP1FCS",
+    "B002OHE4JK"
+   ],
+   "q29": [
+    "B015XJSXEC",
+    "B071JMDR6D",
+    "B077YBMLFH",
+    "B01MU2XM13",
+    "B01M0W56E4"
+   ],
+   "q30": [
+    "B00IY8MNSW",
+    "B01MYGURYK",
+    "B00HDK1POK",
+    "B01FZLGAPW",
+    "B01MYUCJBF"
+   ]
+  }
+ }
+}
