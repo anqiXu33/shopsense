@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Appearance check</title>
+<style>
+  :root { --bg: #fff; --text: #111827; --muted: #4b5563; --border: #d1d5db; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #111827; --text: #f3f4f6; --muted: #9ca3af; --border: #374151; } }
+  body { margin: 0; padding: 1.5rem 1rem; background: var(--bg); color: var(--text);
+         font: 16px/1.6 system-ui, sans-serif; }
+  main { max-width: 46rem; margin: 0 auto; }
+  article { border-top: 1px solid var(--border); padding: 1.5rem 0; }
+  h2 { font-size: 1.1rem; margin: 0; }
+  .asin { color: var(--muted); margin: 0.25rem 0 0.75rem; font-size: 0.875rem; }
+  img { max-width: 100%; max-height: 22rem; background: #fff; display: block; }
+</style>
+</head>
+<body>
+<main>
+<h1>外观描述核对：30 张图</h1>
+<p>对照每张图片和下面的描述，在 <code>appearance_labels.csv</code> 里按同样的编号填写。规则见 <code>README.md</code>。</p>
+<article>
+  <h2>#1 · BEARPAW Men&#x27;s Moc II Multiple Colors | Men&#x27;s Slipper | Men&#x27;s Shoe | Comfortable &amp; Lightweight</h2>
+  <p class="asin">B004QMSTGA</p>
+  <img src="https://m.media-amazon.com/images/I/71msfFbt11L._AC_UL1500_.jpg" alt="Photo #1: BEARPAW Men&#x27;s Moc II Multiple Colors | Men&#x27;s Slipper | Men&#x27;s Shoe | Comfortable &amp; Lightweight" loading="lazy">
+  <p lang="en">A tan-brown moccasin-style slipper has a suede-like upper, brown laces, and a pale fluffy lining visible around the opening. Its thick brown rubber sole has a low heel and a textured edge.</p>
+  <p lang="zh-CN">这是一只棕褐色莫卡辛风格的拖鞋，鞋面呈麂皮质感，配有棕色鞋带，鞋口露出浅色绒毛内衬。厚实的棕色橡胶鞋底带有低跟和纹理边缘。</p>
+</article>
+<article>
+  <h2>#2 · Clarks Men&#x27;s Escalade Step</h2>
+  <p class="asin">B016N3E84G</p>
+  <img src="https://m.media-amazon.com/images/I/81+QCiTlV2L._AC_UL1500_.jpg" alt="Photo #2: Clarks Men&#x27;s Escalade Step" loading="lazy">
+  <p lang="en">A black slip-on dress shoe with a smooth, shiny leather-like upper and a short stitched panel on the vamp. It has a low black rubber sole with a small raised heel and textured sides.</p>
+  <p lang="zh-CN">这是一双黑色套脚正装鞋，鞋面看起来光滑亮面，类似皮革，鞋背有一小块缝线饰片。黑色橡胶鞋底较低，带有小块凸起的鞋跟和纹理侧边。</p>
+</article>
+<article>
+  <h2>#3 · EYUSHIJIA Men&#x27;s Waterproof Snow Boots Hiking Boot</h2>
+  <p class="asin">B075XJC2D9</p>
+  <img src="https://m.media-amazon.com/images/I/61T4bBpSzTL._AC_UL1000_.jpg" alt="Photo #3: EYUSHIJIA Men&#x27;s Waterproof Snow Boots Hiking Boot" loading="lazy">
+  <p lang="en">A taupe-brown ankle-high hiking boot has a smooth, suede-like upper, darker brown padded collar, and tan accent panels. It fastens with brown laces through metal eyelets, above a thick cream-colored lugged sole with a tan strip along the edge.</p>
+  <p lang="zh-CN">这是一只灰褐色的高帮徒步靴，鞋面看起来光滑、像绒面革，配有深棕色软垫鞋口和棕黄色拼接饰片。棕色鞋带穿过金属鞋眼系紧，下方是厚实的奶油色齿纹鞋底，边缘带有棕黄色条纹。</p>
+</article>
+<article>
+  <h2>#4 · DADAWEN Women&#x27;s Classic T-Strap Platform Mid-Heel Square Toe Oxfords Dress Shoes</h2>
+  <p class="asin">B0772R1LRL</p>
+  <img src="https://m.media-amazon.com/images/I/61boKcnnj2L._AC_UL1138_.jpg" alt="Photo #4: DADAWEN Women&#x27;s Classic T-Strap Platform Mid-Heel Square Toe Oxfords Dress Shoes" loading="lazy">
+  <p lang="en">A black, glossy T-strap Oxford-style shoe has a square toe and a smooth-looking upper with perforated trim. It fastens with a buckle at the side, and has a thick, ridged platform sole with a chunky block heel.</p>
+  <p lang="zh-CN">这是一只黑色亮面 T 字带牛津风鞋，方头，鞋面看起来光滑，并饰有穿孔边饰。鞋侧以搭扣固定，配有厚实的凹槽防滑厚底和粗跟。</p>
+</article>
+<article>
+  <h2>#5 · KEEN Women&#x27;s Newport H2 Sandal</h2>
+  <p class="asin">B003O2SLXY</p>
+  <img src="https://m.media-amazon.com/images/I/71SL+0ifkYL._AC_UL1500_.jpg" alt="Photo #5: KEEN Women&#x27;s Newport H2 Sandal" loading="lazy">
+  <p lang="en">A black closed-toe sandal with a textured rubber toe guard and wide webbing straps over the upper. It fastens with elastic laces and a cord lock; the thick black sole has deep tread and a raised toe guard.</p>
+  <p lang="zh-CN">这是一款黑色包头凉鞋，鞋头有纹理橡胶护边，鞋面覆有宽织带。它以弹力鞋带和锁扣固定；厚实的黑色鞋底带有较深的纹路，鞋头向上包覆。</p>
+</article>
+<article>
+  <h2>#6 · Vionic Women&#x27;s, Shore Slide Sandal</h2>
+  <p class="asin">B00I8T22FG</p>
+  <img src="https://m.media-amazon.com/images/I/61XsiiXlqzL._AC_UL1450_.jpg" alt="Photo #6: Vionic Women&#x27;s, Shore Slide Sandal" loading="lazy">
+  <p lang="en">A tan slide sandal has two wide, textured cork-like straps with small shiny gold-toned flecks. It slips on with no visible fastening, and has a tan footbed above a dark brown, slightly raised sole.</p>
+  <p lang="zh-CN">这是一款棕褐色一字拖凉鞋，鞋面有两条宽宽的纹理带，外观看起来像软木，并点缀着细小的金色亮片。鞋子没有可见的扣合装置，直接套穿；棕褐色鞋床下方是深棕色、略微加厚的鞋底。</p>
+</article>
+<article>
+  <h2>#7 · Vionic Women&#x27;s Rest Floriana Toepost Sandal - Ladies Flip flops with Concealed Orthotic Support</h2>
+  <p class="asin">B07BZZ33R6</p>
+  <img src="https://m.media-amazon.com/images/I/61mSqOcuwUL._AC_UL1500_.jpg" alt="Photo #7: Vionic Women&#x27;s Rest Floriana Toepost Sandal - Ladies Flip flops with Concealed Orthotic Support" loading="lazy">
+  <p lang="en">A black thong sandal has a glossy, textured upper decorated with small brown and silver studs. It slips on, with a toe post and no buckle; the black sole is thick and slightly raised at the heel, with a textured tread underneath.</p>
+  <p lang="zh-CN">这是一只黑色夹趾凉鞋，鞋面带有光泽和纹理，并饰有棕色与银色小铆钉。凉鞋套脚穿着，以夹趾带固定，没有搭扣；黑色鞋底较厚，后跟略高，底面带有纹路。</p>
+</article>
+<article>
+  <h2>#8 · New Balance Men&#x27;s 481 V3 Trail Running Shoe</h2>
+  <p class="asin">B01MU2XM13</p>
+  <img src="https://m.media-amazon.com/images/I/71cmm0vooEL._AC_UL1500_.jpg" alt="Photo #8: New Balance Men&#x27;s 481 V3 Trail Running Shoe" loading="lazy">
+  <p lang="en">A dark brown and black trail-style shoe with orange accents, featuring a mesh and synthetic-looking upper with reinforced overlays. It fastens with orange-flecked black laces, and has a thick, rugged tan-and-black treaded sole with small orange details.</p>
+  <p lang="zh-CN">这是一只深棕色和黑色、带橙色点缀的越野风格鞋，鞋面看起来由网布和合成材料制成，并有加固覆层。鞋带为带橙色点缀的黑色鞋带；厚实的棕褐色与黑色鞋底带有粗犷纹路和少量橙色细节。</p>
+</article>
+<article>
+  <h2>#9 · TENGTA Unisex Waterproof Garden Shoes Womens Rain Boots Mens Car Wash Footwear</h2>
+  <p class="asin">B07CG2XTK9</p>
+  <img src="https://m.media-amazon.com/images/I/61LIEtFpIaL._AC_UL1300_.jpg" alt="Photo #9: TENGTA Unisex Waterproof Garden Shoes Womens Rain Boots Mens Car Wash Footwear" loading="lazy">
+  <p lang="en">A black slip-on garden shoe has a smooth-looking upper with a textured panel over the toe, plus a stretchy-looking collar edged in bright green. It has no visible laces or buckle, and the thick black sole has deep, irregular tread with a thin green stripe along the side.</p>
+  <p lang="zh-CN">这是一只黑色套穿式园艺鞋，鞋面看起来较光滑，鞋头处有一块带纹理的区域，弹性鞋口边缘饰有亮绿色。鞋面没有可见的鞋带或扣具；厚实的黑色鞋底带有深而不规则的纹路，侧边有一道细绿色条纹。</p>
+</article>
+<article>
+  <h2>#10 · DREAM PAIRS Men&#x27;s House Slippers Moccasin Indoor Outdoor Fuzzy Furry Loafers Suede Leather Warm Comfortable Shoes</h2>
+  <p class="asin">B07BNJ44VJ</p>
+  <img src="https://m.media-amazon.com/images/I/71MyjyAh1sL._AC_UL1500_.jpg" alt="Photo #10: DREAM PAIRS Men&#x27;s House Slippers Moccasin Indoor Outdoor Fuzzy Furry Loafers Suede Leather Warm Comfortable Shoes" loading="lazy">
+  <p lang="en">This is a brown moccasin-style slip-on shoe with a suede-like upper and pale, fluffy lining visible at the opening. It has no fastener, and the brown rubber-like sole has a low profile with small ridges along the bottom.</p>
+  <p lang="zh-CN">这是一只棕色莫卡辛式套脚鞋，鞋面看起来像绒面材质，鞋口露出浅色蓬松的内衬。鞋上没有扣合装置，棕色鞋底较薄，底部带有细小纹路。</p>
+</article>
+<article>
+  <h2>#11 · Clarks Women&#x27;s Arla Elin Slide Sandal</h2>
+  <p class="asin">B074PR7GYV</p>
+  <img src="https://m.media-amazon.com/images/I/41DcOlpPCaL._AC_.jpg" alt="Photo #11: Clarks Women&#x27;s Arla Elin Slide Sandal" loading="lazy">
+  <p lang="en">A metallic taupe slide sandal has several wide straps across the foot, with hook-and-loop tabs for fastening. The upper looks like smooth synthetic material, and it has a thick, dark, molded sole with a ridged tread underneath.</p>
+  <p lang="zh-CN">这是一只金属光泽灰褐色的套脚凉鞋，鞋面有几条宽带，并以粘扣带固定。鞋面看起来是光滑的合成材料，配有厚实的深色模压鞋底，底部带有纹路。</p>
+</article>
+<article>
+  <h2>#12 · Merrell Men&#x27;s Moab Adventure MOC Hiking Shoe</h2>
+  <p class="asin">B01ND4DEH1</p>
+  <img src="https://m.media-amazon.com/images/I/61mnuKWXtLL._AC_UL1500_.jpg" alt="Photo #12: Merrell Men&#x27;s Moab Adventure MOC Hiking Shoe" loading="lazy">
+  <p lang="en">A brown slip-on hiking shoe with a suede-like upper and darker mesh around the collar. It has no laces, and a thick, rugged black rubber sole with brown sections underneath.</p>
+  <p lang="zh-CN">这是一只棕色套脚式徒步鞋，鞋面看起来像麂皮，鞋口周围是较深色的网布。鞋面没有鞋带，底部是厚实、纹路粗犷的黑色橡胶鞋底，底面带有棕色部分。</p>
+</article>
+<article>
+  <h2>#13 · Skechers Performance Women&#x27;s Go Walk 3 Slip-On Walking Shoe</h2>
+  <p class="asin">B00L4TP3NK</p>
+  <img src="https://m.media-amazon.com/images/I/71P9cBFz-FL._AC_UL1235_.jpg" alt="Photo #13: Skechers Performance Women&#x27;s Go Walk 3 Slip-On Walking Shoe" loading="lazy">
+  <p lang="en">A gray slip-on walking shoe has a dark gray-and-black patterned knit upper, with a smooth gray panel across the toe. It has no laces or visible fastener, and a thick white sole with rounded segmented sections and a thin dark stripe.</p>
+  <p lang="zh-CN">这是一只灰色一脚蹬步行鞋，鞋面为深灰与黑色交织的针织图案，鞋头有一块光滑的灰色拼片。鞋上没有鞋带或可见的扣合件，厚白色鞋底带有圆弧分段和一道细深色条纹。</p>
+</article>
+<article>
+  <h2>#14 · Skechers Sport Men&#x27;s Energy Downforce Lace-Up Sneaker</h2>
+  <p class="asin">B000ARJGC6</p>
+  <img src="https://m.media-amazon.com/images/I/71-7+wkxdcL._AC_UL1500_.jpg" alt="Photo #14: Skechers Sport Men&#x27;s Energy Downforce Lace-Up Sneaker" loading="lazy">
+  <p lang="en">A dark gray lace-up sneaker has a mixed-material upper, with smooth panels, stitched sections, and mesh-like fabric around the tongue and collar. Brown laces run through fabric loops, and a thick, sculpted light-gray midsole sits above a chunky black treaded outsole.</p>
+  <p lang="zh-CN">这是一只深灰色系带运动鞋，鞋面由多种材质组成，有光滑拼片、缝线区域，以及鞋舌和鞋口处类似网布的织物。棕色鞋带穿过织物鞋环，厚实的浅灰色中底下方是凹凸明显的黑色外底。</p>
+</article>
+<article>
+  <h2>#15 · Dockers Proposal - Genuine Full-Grain Leather Slip-On Loafer Dress Shoes for Men Featuring All Motion Comfort Technology, EVA Sock Lining, and Durable Rubber Outsole</h2>
+  <p class="asin">B002OHE4D6</p>
+  <img src="https://m.media-amazon.com/images/I/61WCQZ-UCwL._AC_UL1500_.jpg" alt="Photo #15: Dockers Proposal - Genuine Full-Grain Leather Slip-On Loafer Dress Shoes for Men Featuring All Motion Comfort Technology, EVA Sock Lining, and Durable Rubber Outsole" loading="lazy">
+  <p lang="en">A black slip-on dress loafer with a smooth leather-looking upper, stitched seams, and a raised band across the instep. It has no laces or buckle, and a thick black sole with a low block heel.</p>
+  <p lang="zh-CN">这是一款黑色套脚正装乐福鞋，鞋面看起来光滑似皮革，带有缝线和横跨脚背的凸起饰带。鞋面没有鞋带或搭扣，配有厚实的黑色鞋底和低矮的方跟。</p>
+</article>
+<article>
+  <h2>#16 · Saucony Women&#x27;s ProGrid Integrity ST2 Walking Shoe</h2>
+  <p class="asin">B00413QUHE</p>
+  <img src="https://m.media-amazon.com/images/I/81Z1NTNiDtL._AC_UL1500_.jpg" alt="Photo #16: Saucony Women&#x27;s ProGrid Integrity ST2 Walking Shoe" loading="lazy">
+  <p lang="en">A white and light-gray walking shoe with a mostly synthetic-looking upper, perforated panels, and stitched overlays. It fastens with white laces, and has a thick, sculpted white midsole with gray and teal sections along the dark-gray outsole.</p>
+  <p lang="zh-CN">这是一双白色和浅灰色的步行鞋，鞋面看起来以合成材料为主，带有透气孔和拼接缝线。鞋带为白色；厚实、带有曲线造型的白色中底下方，可见灰色和蓝绿色的外底部分。</p>
+</article>
+<article>
+  <h2>#17 · Cole Haan Men&#x27;s Tucker Venetian Slip-On Loafer</h2>
+  <p class="asin">B00UZ2Y92I</p>
+  <img src="https://m.media-amazon.com/images/I/71zrr33+N9L._AC_UL1500_.jpg" alt="Photo #17: Cole Haan Men&#x27;s Tucker Venetian Slip-On Loafer" loading="lazy">
+  <p lang="en">A black slip-on loafer with a pebbled-looking upper and stitched apron-style toe. It has no visible laces or buckle, and a thick black sole with a ridged tread.</p>
+  <p lang="zh-CN">这是一只黑色套穿式乐福鞋，鞋面呈颗粒纹理，鞋头周围有缝线装饰。没有可见的鞋带或搭扣，配有厚实的黑色鞋底和带棱纹的鞋纹。</p>
+</article>
+<article>
+  <h2>#18 · Skechers Sport Men&#x27;s Stamina Nuovo Cutback Lace-Up Sneaker</h2>
+  <p class="asin">B003M68UN8</p>
+  <img src="https://m.media-amazon.com/images/I/81VG2bNw6iL._AC_UL1500_.jpg" alt="Photo #18: Skechers Sport Men&#x27;s Stamina Nuovo Cutback Lace-Up Sneaker" loading="lazy">
+  <p lang="en">A lace-up athletic sneaker with a dark navy and black upper, gray mesh panels, and white laces. The upper combines mesh with smooth-looking overlays, and the thick white sole has black tread and dark cutout details.</p>
+  <p lang="zh-CN">这是一款系带运动鞋，鞋面以深海军蓝和黑色为主，配有灰色网布和白色鞋带。鞋面由网布和光滑外观的拼接层组成，厚实的白色鞋底带有黑色纹路和深色镂空细节。</p>
+</article>
+<article>
+  <h2>#19 · Skechers BOBS Women&#x27;s Bobs Plush-Dream Doodle Ballet Flat</h2>
+  <p class="asin">B06XTCJ285</p>
+  <img src="https://m.media-amazon.com/images/I/71Ghzl7JxNL._AC_UL1500_.jpg" alt="Photo #19: Skechers BOBS Women&#x27;s Bobs Plush-Dream Doodle Ballet Flat" loading="lazy">
+  <p lang="en">A gray slip-on ballet flat has a printed upper with dark animal silhouettes and bright pink accents, made of what looks like fabric. It has no visible fastener and a low, dark rubber-like sole.</p>
+  <p lang="zh-CN">这是一只灰色套穿式芭蕾平底鞋，布面上印有深色动物剪影和亮粉色点缀。看不到扣件，鞋底低矮，呈深色橡胶质感。</p>
+</article>
+<article>
+  <h2>#20 · Tamarac by Slippers International Men&#x27;s Scuffy Clog Slipper</h2>
+  <p class="asin">B000AS7F9G</p>
+  <img src="https://m.media-amazon.com/images/I/71E2h9LHtcL._AC_UL1500_.jpg" alt="Photo #20: Tamarac by Slippers International Men&#x27;s Scuffy Clog Slipper" loading="lazy">
+  <p lang="en">A black slip-on clog slipper with a closed toe and an open back. The upper looks like soft, matte fabric with a small label at the side; a dark rubber-like sole has a ridged tread and stitched-looking edge detail.</p>
+  <p lang="zh-CN">这是一只黑色套脚式木屐拖鞋，鞋头包覆、后跟敞开。鞋面看起来是柔软的哑光织物，侧面有一小块标签；深色鞋底像橡胶，底面带有纹路，边缘有类似缝线的细节。</p>
+</article>
+<article>
+  <h2>#21 · New Balance Men&#x27;s 510v3 Trail Running Shoe</h2>
+  <p class="asin">B015XJSXEC</p>
+  <img src="https://m.media-amazon.com/images/I/81YR5BWEvVL._AC_UL1500_.jpg" alt="Photo #21: New Balance Men&#x27;s 510v3 Trail Running Shoe" loading="lazy">
+  <p lang="en">A dark navy trail-running shoe with a mesh-and-synthetic-looking upper, gray overlays, and bright lime accents. It fastens with black laces, and has a thick, sculpted gray sole with lime tread visible underneath.</p>
+  <p lang="zh-CN">这是一只深海军蓝色越野跑鞋，鞋面看起来由网布和合成材料拼成，带有灰色饰片和亮黄绿色点缀。鞋带为黑色，鞋底厚实且有立体纹路，灰色鞋底下方可见黄绿色外底。</p>
+</article>
+<article>
+  <h2>#22 · Dansko Women&#x27;s Pro XP Waterproof</h2>
+  <p class="asin">B00DZL23D8</p>
+  <img src="https://m.media-amazon.com/images/I/71M+-NU6zSL._AC_UL1500_.jpg" alt="Photo #22: Dansko Women&#x27;s Pro XP Waterproof" loading="lazy">
+  <p lang="en">A dark brown, closed-toe clog with a smooth, shiny leather-looking upper and a raised heel. It has no visible fastener, and the thick dark sole has a low heel and stitched-looking detailing around the edge.</p>
+  <p lang="zh-CN">这是一款深棕色包头木屐鞋，鞋面光滑有光泽，看起来像皮革，后跟略高。鞋面没有可见的扣合装置；深色厚鞋底带低跟，边缘有类似缝线的细节。</p>
+</article>
+<article>
+  <h2>#23 · Skechers Women&#x27;s Microburst One up Fashion Sneaker</h2>
+  <p class="asin">B01J2RZYXY</p>
+  <img src="https://m.media-amazon.com/images/I/81gjAbMcuEL._AC_UL1500_.jpg" alt="Photo #23: Skechers Women&#x27;s Microburst One up Fashion Sneaker" loading="lazy">
+  <p lang="en">A dark navy slip-on sneaker has a knitted-looking fabric upper and a low, rounded toe. It has no visible laces or straps, and a thick light-gray sole with a textured, ridged tread.</p>
+  <p lang="zh-CN">这是一只深藏青色的套穿式运动鞋，鞋面看起来像针织面料，鞋头低矮圆润。鞋面没有可见的鞋带或搭扣，配有厚实的浅灰色鞋底，底面纹路凸起。</p>
+</article>
+<article>
+  <h2>#24 · Polar Women&#x27;s Nylon Tall Winter Snow Boot</h2>
+  <p class="asin">B00MDKWT1I</p>
+  <img src="https://m.media-amazon.com/images/I/41I2HVelgDL._AC_.jpg" alt="Photo #24: Polar Women&#x27;s Nylon Tall Winter Snow Boot" loading="lazy">
+  <p lang="en">A tall white snow boot has a quilted-looking synthetic upper, a fluffy white collar, and white laces threaded through side loops and straps with snap buttons. Its thick white rubber sole has a thin black stripe and a ridged tread.</p>
+  <p lang="zh-CN">这是一只白色高筒雪地靴，鞋面看起来带有绗缝纹理，配有白色绒毛靴口；白色鞋带穿过侧面的鞋环和带按扣的搭带。厚白色橡胶鞋底带有一道细黑线，底部有凸纹。</p>
+</article>
+<article>
+  <h2>#25 · Nike Women&#x27;s Benassi Just Do It Sandal</h2>
+  <p class="asin">B01D3MS79W</p>
+  <img src="https://m.media-amazon.com/images/I/517g0f3mSYL._AC_UL1000_.jpg" alt="Photo #25: Nike Women&#x27;s Benassi Just Do It Sandal" loading="lazy">
+  <p lang="en">A black open-toe slide sandal has a wide, smooth-looking synthetic strap across the foot, with no buckle or other fastening. Its black sole has a raised rim and a textured, dimpled footbed.</p>
+  <p lang="zh-CN">这是一只黑色露趾一字拖，鞋面是一条宽阔、表面平滑的合成材质搭带，没有扣件或其他固定装置。黑色鞋底边缘略高，鞋床带有凹凸纹理。</p>
+</article>
+<article>
+  <h2>#26 · Skechers Sport Women&#x27;s Breathe Easy Fortune Fashion Sneaker</h2>
+  <p class="asin">B01FSIKPNK</p>
+  <img src="https://m.media-amazon.com/images/I/91+yzhg9HVL._AC_UL1500_.jpg" alt="Photo #26: Skechers Sport Women&#x27;s Breathe Easy Fortune Fashion Sneaker" loading="lazy">
+  <p lang="en">A dark navy, low-cut sneaker has a fine-textured, sparkly-looking fabric upper with darker overlays and elastic laces across the top. It has a pull tab at the heel and a thick, dark rubber sole with molded ridges and tread.</p>
+  <p lang="zh-CN">这是一只深海军蓝色的低帮运动鞋，鞋面为细纹理、带闪光感的织物，并有颜色较深的拼接片，鞋面上横跨着弹力鞋带。鞋跟处有提环，厚实的深色橡胶鞋底带有模压纹路和防滑纹。</p>
+</article>
+<article>
+  <h2>#27 · Merrell Men&#x27;s Moab 2 Mid Waterproof Hiking Boot</h2>
+  <p class="asin">B01HF9ZN7I</p>
+  <img src="https://m.media-amazon.com/images/I/811+g4mJXRL._AC_UL1500_.jpg" alt="Photo #27: Merrell Men&#x27;s Moab 2 Mid Waterproof Hiking Boot" loading="lazy">
+  <p lang="en">A brown mid-height hiking boot with dark mesh panels and suede-like overlays, plus black protective edging around the toe. It fastens with orange-and-black laces through fabric loops and metal eyelets, and has a thick, rugged black sole with deep tread.</p>
+  <p lang="zh-CN">这是一只棕色中帮徒步靴，带有深色网布拼片、绒面质感的覆盖层，以及包住鞋头的黑色防护边。橙黑相间的鞋带穿过织物鞋环和金属鞋孔，搭配厚实、带深纹路的黑色鞋底。</p>
+</article>
+<article>
+  <h2>#28 · Teva Men&#x27;s Katavi 2</h2>
+  <p class="asin">B002KKCZLA</p>
+  <img src="https://m.media-amazon.com/images/I/81jF+ArZdGL._AC_UL1500_.jpg" alt="Photo #28: Teva Men&#x27;s Katavi 2" loading="lazy">
+  <p lang="en">A dark brown and charcoal sport sandal with an open toe and heel. Its upper has textured fabric straps with brown edging and orange lettering, fastened by adjustable hook-and-loop straps. The thick dark rubber sole has a rugged, deeply treaded bottom.</p>
+  <p lang="zh-CN">这是一款深棕色和炭灰色的运动凉鞋，露趾且后跟敞开。鞋面由带纹理的织物鞋带构成，边缘为棕色，并饰有橙色字样；鞋带以可调节的粘扣带固定。厚实的深色橡胶鞋底带有粗犷、深刻的纹路。</p>
+</article>
+<article>
+  <h2>#29 · Vibram Men&#x27;s Five Fingers, KSO EVO Crosstraining</h2>
+  <p class="asin">B01AT3FA9I</p>
+  <img src="https://m.media-amazon.com/images/I/51gGNufJnML._AC_UL1415_.jpg" alt="Photo #29: Vibram Men&#x27;s Five Fingers, KSO EVO Crosstraining" loading="lazy">
+  <p lang="en">A black, low-cut five-toe shoe has a mesh-like upper with red laces and a small black toggle. Its thin black sole has bright red sections visible beneath the toes and along the edge.</p>
+  <p lang="zh-CN">这是一只黑色低帮分趾鞋，鞋面看起来像网布，配有红色鞋带和一个小黑色扣件。鞋底较薄，主体为黑色，脚趾下方和边缘可见亮红色部分。</p>
+</article>
+<article>
+  <h2>#30 · Minnetonka Men&#x27;s Double Bottom Fleece Slipper</h2>
+  <p class="asin">B002QB1ELK</p>
+  <img src="https://m.media-amazon.com/images/I/81wktfZ41gL._AC_UL1500_.jpg" alt="Photo #30: Minnetonka Men&#x27;s Double Bottom Fleece Slipper" loading="lazy">
+  <p lang="en">A black moccasin-style slipper with a fuzzy, suede-like upper and a red-and-black plaid lining. It has a tan leather lace tied across the front, and a thick, flat tan sole with visible stitching around the edge.</p>
+  <p lang="zh-CN">这是一只黑色莫卡辛式拖鞋，鞋面看起来毛茸茸的，像麂皮，内衬为红黑格纹。鞋头系着一根棕褐色皮绳，鞋底厚而平，边缘可见缝线。</p>
+</article>
+</main>
+</body>
+</html>

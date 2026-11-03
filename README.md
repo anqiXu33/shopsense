@@ -294,6 +294,19 @@ How to read it:
 - The Chinese and English highlights speak identical counts (checked on
   all 151).
 
+### 3. Appearance descriptions (30 photos)
+
+[eval/build_appearance_sheet.py](eval/build_appearance_sheet.py) samples 30
+products with a fixed seed and exports their descriptions to
+[eval/annotation/appearance_labels.csv](eval/annotation/appearance_labels.csv).
+[eval/annotation/appearance_review.html](eval/annotation/appearance_review.html)
+shows each photo next to its description. A person marks kind of shoe,
+colour, upper, fastening and sole as right, wrong or not covered, and flags
+invented details and Chinese–English mismatches.
+[eval/appearance_metrics.py](eval/appearance_metrics.py) scores the sheet.
+
+**Results:** pending manual labelling.
+
 ### Limitations
 
 - **The judge is a language model, and here the same one.** Judging one
