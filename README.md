@@ -388,6 +388,24 @@ invented details and Chinese–English mismatches.
 - **The data is old and small:** 30 reviews per shoe, all from Amazon US,
   in English.
 
+## From demo to production
+
+The principle carries over to any size: the model makes small per-review
+judgements, code does the counting and ranking, and highlights are built
+offline. Several choices, however, only hold at demo size. None of the
+right-hand column is implemented here.
+
+| In this demo | Why it would not hold in production | What a real deployment would need |
+|---|---|---|
+| Q&A reads all 30 reviews of a product | Popular products have thousands of reviews; reading all of them per question is too slow and too costly | Retrieve a candidate set first, check those, and speak the number checked ("of the 200 reviews I looked at"), not the product's total |
+| Highlights are built once for the whole catalogue | New reviews arrive every day | Check only the new reviews against the existing stances and update the counts; rebuild the candidate stances periodically |
+| About 200 model calls per product for highlights ($0.006 at 30 reviews) | Cost grows with the number of reviews: roughly 100 times more at 3,000 reviews per product | Sample reviews, or run the per-review yes/no check with a small, cheap classifier and keep the large model for proposing stances |
+| 15 fixed stances written for shoes (runs small, narrow, slippery ...) | A retailer sells many categories | One stance list per category, or stances proposed from the reviews and approved before use |
+| Every question is answered live, in a few seconds | Shoppers ask the same few questions about most products | Answer the common questions offline with the highlights, and keep the live path for the rest |
+| Qdrant in embedded mode, one process at a time | Many shoppers at once, plus ingest and eval jobs | A Qdrant server (already supported through `QDRANT_URL`) |
+| A demo store with its own frontend | A retailer has its own product pages | An API or page component the retailer embeds; the content must work with the page's existing screen-reader structure |
+| No request log | Wrong answers cannot be traced or replayed | Log each request (question, reviews checked, per-review verdicts, timing, cost) and feed failures back into the eval set |
+
 ## Quick start
 
 ```bash
