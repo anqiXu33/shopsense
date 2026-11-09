@@ -29,8 +29,6 @@ QDRANT_API_KEY = os.getenv("QDRANT_API_KEY") or None
 QDRANT_COLLECTIONS = {
     "products": "products",
     "reviews": "reviews",
-    "knowledge": "knowledge",
-    "visual_semantic": "visual_semantic",
 }
 
 
@@ -89,7 +87,3 @@ def _llm_config(prefix: str, default: LLMConfig | None = None) -> LLMConfig:
 
 LLM = _llm_config("LLM")
 JUDGE = _llm_config("JUDGE", default=LLM)
-
-# ── Retrieval ────────────────────────────────────────────────────────────────
-TOP_K = 5  # results per Qdrant query
-MAX_CONTEXT_TOKENS = 2000

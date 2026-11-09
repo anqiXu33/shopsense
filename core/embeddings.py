@@ -41,7 +41,7 @@ def embed(text: str) -> List[float]:
 
 
 def embed_batch(texts: List[str], show_progress: bool = False) -> List[List[float]]:
-    """Embed stored documents (reviews, knowledge entries, descriptions)."""
+    """Embed stored documents (reviews, product texts)."""
     vectors = _get_model().encode(
         ["passage: " + t for t in texts],
         normalize_embeddings=True,

@@ -17,8 +17,6 @@ from agent.tools.base import (
 
 # Import all tools to register them
 from agent.tools.review_search import SemanticReviewSearchTool
-from agent.tools.knowledge import KnowledgeRetrievalTool
-from agent.tools.visual import VisualSemanticSearchTool
 
 __all__ = [
     # Base classes
@@ -33,6 +31,4 @@ __all__ = [
     "list_tools",
     # Tool classes
     "SemanticReviewSearchTool",
-    "KnowledgeRetrievalTool",
-    "VisualSemanticSearchTool",
 ]

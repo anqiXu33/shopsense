@@ -1,15 +1,14 @@
 """scripts/ingest_all.py
 
-Load the shoe subset (Amazon Reviews 2023, see scripts/build_dataset.py) and
-the material knowledge base into Qdrant. Collections are dropped and rebuilt,
-so the script can be rerun at any time.
+Load the shoe subset (Amazon Reviews 2023, see scripts/build_dataset.py)
+into Qdrant. Collections are dropped and rebuilt, so the script can be rerun
+at any time.
 
 Inputs:
     data/shoes/products.json    scripts/build_dataset.py
     data/shoes/reviews.json     scripts/build_dataset.py
     data/shoes/highlights.json  scripts/build_highlights.py
     data/shoes/visual.json      scripts/generate_visual_descriptions.py
-    data/knowledge.json
 
 Usage:
     python scripts/ingest_all.py
@@ -27,12 +26,7 @@ from qdrant_client.models import PointStruct
 
 from config.settings import QDRANT_COLLECTIONS, ROOT_DIR, get_qdrant_client
 from core.embeddings import embed_batch
-from scripts.setup_collections import (
-    setup_knowledge_collection,
-    setup_products_collection,
-    setup_reviews_collection,
-    setup_visual_semantic_collection,
-)
+from scripts.setup_collections import setup_products_collection, setup_reviews_collection
 
 DATA_DIR = os.path.join(ROOT_DIR, "data")
 BATCH = 256
@@ -101,46 +95,6 @@ def ingest_reviews(client: QdrantClient):
     print(f"[Reviews] Uploaded {len(points)} reviews.")
 
 
-def ingest_knowledge(client: QdrantClient):
-    knowledge = load_json("knowledge.json")
-    print(f"\n[Knowledge] Ingesting {len(knowledge)} entries...")
-    collection = QDRANT_COLLECTIONS["knowledge"]
-    recreate(client, collection, setup_knowledge_collection)
-
-    vectors = embed_batch([k["text"] for k in knowledge], show_progress=True)
-    points = [
-        PointStruct(
-            id=point_id(f"knowledge-{i}"),
-            vector=v,
-            payload={k: entry[k] for k in ("topic", "material", "category", "text")},
-        )
-        for i, (entry, v) in enumerate(zip(knowledge, vectors))
-    ]
-    upsert(client, collection, points)
-    print(f"[Knowledge] Uploaded {len(points)} entries.")
-
-
-def ingest_visual_semantic(client: QdrantClient):
-    visual = load_json("shoes", "visual.json")
-    print(f"\n[Visual] Ingesting {len(visual)} appearance descriptions...")
-    collection = QDRANT_COLLECTIONS["visual_semantic"]
-    recreate(client, collection, setup_visual_semantic_collection)
-
-    asins = sorted(visual)
-    vectors = embed_batch([visual[a]["en"] for a in asins], show_progress=True)
-    points = [
-        PointStruct(
-            id=point_id(f"visual-{a}"),
-            vector=v,
-            payload={"asin": a, "image_type": "main", "text": visual[a]["en"], "text_zh": visual[a]["zh"],
-                     "image_url": visual[a]["image_url"]},
-        )
-        for a, v in zip(asins, vectors)
-    ]
-    upsert(client, collection, points)
-    print(f"[Visual] Uploaded {len(points)} entries.")
-
-
 def main():
     print("=" * 60)
     print("ShopSense Data Ingestion")
@@ -150,8 +104,6 @@ def main():
 
     ingest_products(client)
     ingest_reviews(client)
-    ingest_knowledge(client)
-    ingest_visual_semantic(client)
 
     print("\n" + "=" * 60)
     print("Ingestion complete!")

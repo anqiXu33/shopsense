@@ -1,11 +1,9 @@
 """scripts/setup_collections.py
 
 创建 Qdrant collections 和索引。
-根据设计文档，创建 4 个核心 collections：
-- products: 商品语义搜索
+创建 2 个 collections：
+- products: 商品（含评论要点和外观描述）
 - reviews: 评价语义搜索
-- knowledge: 专业知识
-- visual_semantic: 视觉语义
 
 Usage:
     python scripts/setup_collections.py
@@ -113,79 +111,6 @@ def setup_reviews_collection(client: QdrantClient):
             print(f"  ⚠ Index {field_name} may already exist: {e}")
 
 
-def setup_knowledge_collection(client: QdrantClient):
-    """Setup knowledge collection with indexes."""
-    collection_name = QDRANT_COLLECTIONS["knowledge"]
-    
-    collections = client.get_collections().collections
-    existing = [c.name for c in collections]
-    
-    if collection_name in existing:
-        print(f"Collection '{collection_name}' already exists, skipping creation.")
-    else:
-        client.create_collection(
-            collection_name=collection_name,
-            vectors_config=VectorParams(
-                size=VECTOR_SIZE,
-                distance=Distance.COSINE
-            )
-        )
-        print(f"✓ Created collection: {collection_name}")
-    
-    indexes = [
-        ("topic", PayloadSchemaType.KEYWORD),
-        ("material", PayloadSchemaType.KEYWORD),
-        ("category", PayloadSchemaType.KEYWORD),
-    ]
-    
-    for field_name, field_type in indexes:
-        try:
-            client.create_payload_index(
-                collection_name=collection_name,
-                field_name=field_name,
-                field_schema=field_type
-            )
-            print(f"  ✓ Created index: {field_name}")
-        except Exception as e:
-            print(f"  ⚠ Index {field_name} may already exist: {e}")
-
-
-def setup_visual_semantic_collection(client: QdrantClient):
-    """Setup visual_semantic collection with indexes."""
-    collection_name = QDRANT_COLLECTIONS["visual_semantic"]
-    
-    collections = client.get_collections().collections
-    existing = [c.name for c in collections]
-    
-    if collection_name in existing:
-        print(f"Collection '{collection_name}' already exists, skipping creation.")
-    else:
-        client.create_collection(
-            collection_name=collection_name,
-            vectors_config=VectorParams(
-                size=VECTOR_SIZE,
-                distance=Distance.COSINE
-            )
-        )
-        print(f"✓ Created collection: {collection_name}")
-    
-    indexes = [
-        ("asin", PayloadSchemaType.KEYWORD),
-        ("image_type", PayloadSchemaType.KEYWORD),
-    ]
-    
-    for field_name, field_type in indexes:
-        try:
-            client.create_payload_index(
-                collection_name=collection_name,
-                field_name=field_name,
-                field_schema=field_type
-            )
-            print(f"  ✓ Created index: {field_name}")
-        except Exception as e:
-            print(f"  ⚠ Index {field_name} may already exist: {e}")
-
-
 def main():
     """Main entry point."""
     print("=" * 60)
@@ -212,12 +137,6 @@ def main():
     print()
     
     setup_reviews_collection(client)
-    print()
-    
-    setup_knowledge_collection(client)
-    print()
-    
-    setup_visual_semantic_collection(client)
     print()
     
     print("=" * 60)

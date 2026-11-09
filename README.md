@@ -14,15 +14,19 @@ existing content rather than an overlay (see [strategy/](strategy/)).
 
 This repository contains the engine and a **demo store** that stands in for
 a retailer's site. The demo store runs on real Amazon shoe data.
-(`extension/` is an earlier browser-extension prototype and is not
-developed further.)
+
+The project started as a hackathon prototype: a ReAct agent over apparel
+data, later with a browser extension. That version is kept under the git
+tag `v1-hackathon`. It was replaced because the steps of each feature are
+fixed, so an agent deciding "what to do next" added latency and cost
+without adding anything a plain pipeline could not do.
 
 ## The three features
 
 | Feature | What the shopper does | What ShopSense does |
 |---|---|---|
 | **1. Spoken highlights** | Opens a product | Reads out the 3 points reviewers raise most, each with its count: *"Sizing: runs small (12 of 30 reviews mention this; 4 say it fits true to size)"* |
-| **2. Ask the reviews** | Asks by voice: *"有没有人说偏窄？"* | Retrieves this product's reviews that relate to the question, answers only from them, says how many reviews back the answer, and says *"I don't know"* when none do |
+| **2. Ask the reviews** | Asks by voice: *"有没有人说偏窄？"* | Checks every review of this product against the question, answers only from the ones that address it, says how many reviews back the answer, and says *"I don't know"* when none do |
 | **3. Search by need** | Says a need: *"适合宽脚的跑鞋"* | Searches **all** reviews of **all** products in Qdrant, recommends the 5 best matches and says why, from the reviews |
 
 The product page also reads out an **appearance description** written from
@@ -51,8 +55,9 @@ Every count a shopper hears is computed by code, never written by the model:
   Code counts the yes answers, picks the 3 most discussed aspects, and
   builds the sentence from bilingual templates. When another stance on the
   same aspect has at least 2 confirmed reviews, it is read out too.
-- **Q&A.** Each of the 10 retrieved reviews gets its own yes/no call: does
-  it answer the question? The spoken count is the number of yes answers,
+- **Q&A.** Every review of the product (30 in this demo) gets its own
+  yes/no call: does it answer the question? No retrieval step decides which
+  reviews are asked. The spoken count is the number of yes answers,
   and the answer is written from those reviews only. When there are none,
   the answer is a fixed "the reviews don't mention this" sentence and no
   answer is generated.
@@ -124,11 +129,10 @@ Browser (React, Web Speech API)
 FastAPI  backend/main.py
    ├─ agent/review_insights.py   the three features
    ├─ agent/tools/review_search.py  Qdrant review search (filter, group-by)
-   ├─ agent/tools/visual.py      Qdrant search over appearance descriptions
    ├─ core/llm.py                the only place that calls a language model
    └─ core/embeddings.py         multilingual-e5-small, local
 Qdrant (embedded local mode, data/qdrant/)
-   products · reviews · visual_semantic · knowledge
+   products · reviews
 ```
 
 Offline steps, each resumable:
@@ -301,11 +305,16 @@ How to read it:
   against 8.1 true; 21 claims over, 57 under, 60 exact).
 - **Q&A moved less, and not all in one direction.** Precision and exact
   counts rose; recall and "within one" fell. With 30 questions each
-  answer is 3.3 points, so these shifts are within noise. Recall is capped
-  by retrieval: the checks only see the 10 reviews retrieved out of 30.
-  Both wrong "I don't know" answers were retrieval misses. For "is it
-  waterproof?" on a boat shoe, the answering review says *"impervious to
-  fresh and salt water"* and was not among the 10 retrieved.
+  answer is 3.3 points, so these shifts are within noise. Recall was capped
+  by retrieval: in this run the checks only saw the 10 reviews retrieved
+  out of 30. Both wrong "I don't know" answers were retrieval misses. For
+  "is it waterproof?" on a boat shoe, the answering review says
+  *"impervious to fresh and salt water"* and was not among the 10 retrieved.
+- **The Q&A columns predate a fix.** Because of that cap, Q&A now checks
+  all 30 reviews of the product instead of a retrieved 10 (see
+  `answer_question`). The Q&A numbers above have **not been re-run** since;
+  `python eval/check_numbers.py --out number_check_all_reviews.json` will
+  produce the new column.
 - **Cost.** Verification multiplies the model calls for highlights by about
   65 (from 900 to 59,910), and the cost from $0.27 to $1.90 for 300
   products. That is still about $0.006 per product, paid once per product,
@@ -365,9 +374,10 @@ invented details and Chinese–English mismatches.
   those are in, the "true count" is the judge's count.
 - **"Exact" is strict.** A count off by one review fails it, which is why
   `within_1` is reported too.
-- **Q&A only sees the 10 retrieved reviews** out of 30. A review that
-  answers the question but is not retrieved is not counted, which shows up
-  as missed reviews and low recall.
+- **Q&A reads all 30 reviews because there are only 30.** A product with
+  thousands of reviews would need a retrieval step first, and the spoken
+  total would then have to be the number of reviews checked, not the
+  number the product has.
 - **Retrieval recall is relative to the pool.** A relevant shoe that no
   system retrieved is never labelled; 30 queries over 300 products is a
   small test set.
@@ -406,8 +416,6 @@ The language model and Qdrant are stubbed, so no key or database is
 needed. [tests/test_review_insights.py](tests/test_review_insights.py)
 covers counting, rendering in both languages, "I don't know", query
 translation, the eval parsers and the metrics.
-[tests/test_agent.py](tests/test_agent.py) covers the earlier ReAct agent
-and the extension endpoint.
 
 ## Project structure
 
@@ -415,9 +423,7 @@ and the extension endpoint.
 shopsense/
 ├── agent/
 │   ├── review_insights.py    # highlights, review Q&A, cross-product search
-│   ├── tools/                # Qdrant search tools (reviews, visual, knowledge)
-│   ├── react.py, legacy.py   # earlier ReAct agent (fabric-era /api/query)
-│   └── page.py               # endpoint for the browser extension
+│   └── tools/                # Qdrant review search (filter, group-by)
 ├── backend/main.py           # FastAPI
 ├── core/                     # llm.py (model calls), embeddings.py
 ├── config/settings.py        # all configuration, from .env

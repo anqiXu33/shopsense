@@ -6,9 +6,8 @@ blind shopper. The configured LLM_MODEL must accept image input.
 Reviews say how a shoe fits and feels but rarely what it looks like, and the
 photo is the one part of a listing a screen reader cannot read. Each
 description is written in English and Chinese and stored in
-data/shoes/visual.json; scripts/ingest_all.py loads it into the
-visual_semantic collection (searched by agent/tools/visual.py) and into the
-product payload (read aloud on the product page).
+data/shoes/visual.json; scripts/ingest_all.py loads it into the product
+payload (shown on the product page).
 
 Like the highlights, descriptions are built offline and the script resumes:
 products already in visual.json are skipped. Delete the file to rebuild.
