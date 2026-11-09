@@ -16,8 +16,8 @@ This repository contains the engine and a **demo store** that stands in for
 a retailer's site. The demo store runs on real Amazon shoe data.
 
 The project started as a hackathon prototype: a ReAct agent over apparel
-data, later with a browser extension. That version is kept under the git
-tag `v1-hackathon`. It was replaced because the steps of each feature are
+data, later with a browser extension. That version is kept on the branch
+`v1-hackathon`. It was replaced because the steps of each feature are
 fixed, so an agent deciding "what to do next" added latency and cost
 without adding anything a plain pipeline could not do.
 
