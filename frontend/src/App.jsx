@@ -91,7 +91,7 @@ function SkipLink() {
 export default function App() {
   const [theme, setTheme] = useState(() => stored('shopsense-theme', 'light'))
   const [lang, setLang] = useState(() => stored('shopsense-lang', 'zh'))
-  const [autoRead, setAutoRead] = useState(() => stored('shopsense-auto-read', 'true') === 'true')
+  const [autoRead, setAutoRead] = useState(() => stored('shopsense-page-speech', 'false') === 'true')
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
@@ -104,7 +104,7 @@ export default function App() {
   }, [lang])
 
   useEffect(() => {
-    localStorage.setItem('shopsense-auto-read', String(autoRead))
+    localStorage.setItem('shopsense-page-speech', String(autoRead))
   }, [autoRead])
 
   return (

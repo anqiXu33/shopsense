@@ -59,7 +59,7 @@ export default function SearchPage() {
       .catch(err => { setError(err.message); setLoading(false) })
   }, [])
 
-  async function runSearch(text, viaVoice) {
+  async function runSearch(text) {
     const q = text.trim()
     if (!q || searching) return
     setSearching(true)
@@ -75,8 +75,11 @@ export default function SearchPage() {
       const data = await res.json()
       setSearch(data)
       sessionStorage.setItem(LAST_SEARCH, JSON.stringify(data))
-      setStatus('')
-      if (viaVoice || autoRead) speak(data.speech, 'search')
+      // The results are an ordered list under a heading that takes focus, so a
+      // screen reader reads them itself. The page only speaks when the shopper
+      // has switched page speech on.
+      setStatus(format(t.foundN, { n: data.results.length }))
+      if (autoRead) speak(data.speech, 'search')
     } catch (err) {
       setSearchError(err.message)
       setStatus(t.errorPrefix + err.message)
@@ -104,7 +107,11 @@ export default function SearchPage() {
     if (cmd?.type === 'open') {
       const hit = search?.results[cmd.n - 1]
       if (hit) navigate(`/product/${hit.asin}`)
-      else speak(format(t.noCommand, { n: cmd.n }), 'command')
+      else {
+        const message = format(t.noCommand, { n: cmd.n })
+        setStatus(message)
+        if (autoRead) speak(message, 'command')
+      }
       return
     }
     if (cmd?.type === 'stop') { stop(); return }
@@ -114,7 +121,7 @@ export default function SearchPage() {
       return
     }
     setQuery(transcript)
-    runSearch(transcript, true)
+    runSearch(transcript)
   }
 
   const { listening, start: startVoice, supported: voiceSupported } = useVoiceInput({
@@ -139,7 +146,7 @@ export default function SearchPage() {
         <form
           className="search-box"
           role="search"
-          onSubmit={e => { e.preventDefault(); runSearch(query, false) }}
+          onSubmit={e => { e.preventDefault(); runSearch(query) }}
         >
           <label htmlFor="need-search" className="sr-only">{t.searchLabel}</label>
           <div className="search-box__inner">

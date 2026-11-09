@@ -55,8 +55,9 @@ export default function DetailPage() {
       .catch(err => setProductError(err.message))
   }, [asin, lang])
 
-  // Feature 1: on opening a product, move focus to its name and read the
-  // highlights aloud (unless auto-read is off, e.g. for screen-reader users).
+  // Feature 1: on opening a product, move focus to its name. The highlights
+  // are a list under their own heading, which a screen reader reads itself;
+  // the page speaks them only when page speech is switched on.
   useEffect(() => {
     if (!product) return
     headingRef.current?.focus()
@@ -67,7 +68,7 @@ export default function DetailPage() {
     if (chatLogRef.current) chatLogRef.current.scrollTop = chatLogRef.current.scrollHeight
   }, [messages, asking])
 
-  async function ask(text, viaVoice) {
+  async function ask(text) {
     const q = text.trim()
     if (!q || asking) return
     stop()
@@ -85,7 +86,9 @@ export default function DetailPage() {
       const data = await res.json()
       setMessages(prev => [...prev, { role: 'ai', content: data.answer, evidence: data.evidence }])
       setStatus('')
-      if (viaVoice || autoRead) speak(data.answer, `msg-${messages.length + 1}`)
+      // The answer lands in the role="log" live region, which a screen reader
+      // announces; the page speaks it only when page speech is switched on.
+      if (autoRead) speak(data.answer, `msg-${messages.length + 1}`)
     } catch (err) {
       setMessages(prev => [...prev, { role: 'ai', content: t.errorPrefix + err.message, evidence: [] }])
       setStatus(t.errorPrefix + err.message)
@@ -103,7 +106,7 @@ export default function DetailPage() {
     if (cmd?.type === 'stop') { stop(); return }
     if (cmd?.type === 'repeat') { speak(product.highlights.speech, 'highlights'); return }
     if (cmd?.type === 'describe') { speak(product.appearance, 'appearance'); return }
-    ask(transcript, true)
+    ask(transcript)
   }
 
   const { listening, start: startVoice, supported: voiceSupported } = useVoiceInput({
@@ -264,13 +267,13 @@ export default function DetailPage() {
 
           <div className="quick-questions" role="group" aria-label={t.askPlaceholder}>
             {t.quick.map(q => (
-              <button key={q} type="button" className="quick-btn" onClick={() => ask(q, false)} disabled={asking}>
+              <button key={q} type="button" className="quick-btn" onClick={() => ask(q)} disabled={asking}>
                 {q}
               </button>
             ))}
           </div>
 
-          <form className="query-form" onSubmit={e => { e.preventDefault(); ask(question, false) }}>
+          <form className="query-form" onSubmit={e => { e.preventDefault(); ask(question) }}>
             <div className="query-form__field">
               <label htmlFor="q-input" className="query-form__label">{t.askLabel}</label>
               <div className="query-form__input-row">

@@ -204,10 +204,13 @@ Everything new can be done by keyboard alone and by voice alone.
 - Focus moves to the product name when a page opens, and to the results
   heading after a search. Status changes are announced through `aria-live`
   regions, and answers through a `role="log"` region.
-- **Auto-read** (header toggle) reads highlights and typed answers aloud
-  with the built-in voice. Voice questions are always answered aloud.
-  Screen-reader users can turn auto-read off so two voices never overlap;
-  everything is still in the page for the screen reader.
+- **Screen reader first.** Highlights, search results and answers are plain
+  page content (headings, lists, a `role="log"` region), so the shopper's
+  own screen reader reads them at its own speed. **Page speech** (header
+  toggle) is off by default; when switched on, the page reads highlights,
+  search results and answers aloud with the browser's built-in voice, for
+  shoppers who do not use a screen reader. The "Read" buttons and the
+  "repeat" / "describe" voice commands speak on request either way.
 - English product names and review quotes carry `lang="en"` inside the
   Chinese UI, so screen readers switch voice. Evidence quotes sit in
   `<details>` elements, closed by default.
