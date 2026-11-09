@@ -8,8 +8,8 @@ database):
   * highlights — batch proposals are verified review by review, the spoken
     count equals the number of confirmed reviews, disagreement is voiced,
     both languages agree;
-  * review Q&A — the count comes from per-review checks, and "I don't know"
-    is said when no review is confirmed;
+  * review Q&A — every review of the product is checked, the count comes
+    from those checks, and "I don't know" is said when no review is confirmed;
   * cross-product search — ranking order is kept and explanations line up;
   * eval — the number parser reads exactly what the renderer writes, and the
     retrieval metrics are computed correctly.
@@ -135,9 +135,8 @@ def test_no_agreement_is_said_plainly():
 
 # ── Review Q&A ───────────────────────────────────────────────────────────────
 
-def _stub_search(monkeypatch, hits):
-    monkeypatch.setattr(RI, "_search", lambda query, **kw: {"reviews": hits})
-    monkeypatch.setattr(RI, "to_english", lambda text: text)
+def _stub_reviews(monkeypatch, reviews):
+    monkeypatch.setattr(RI, "product_reviews", lambda product: reviews)
 
 
 def _stub_checks(monkeypatch, yes_ids, answer):
@@ -153,7 +152,7 @@ def _stub_checks(monkeypatch, yes_ids, answer):
 
 
 def test_answer_count_is_the_number_of_confirmed_reviews(monkeypatch):
-    _stub_search(monkeypatch, _reviews("A1", 4))
+    _stub_reviews(monkeypatch, _reviews("A1", 30))
     calls = _stub_checks(monkeypatch, {"A1-01", "A1-03"}, "Several say it runs narrow.")
     out = RI.answer_question(PRODUCT, "Is it narrow?", "en")
     assert out["count"] == 2
@@ -164,7 +163,7 @@ def test_answer_count_is_the_number_of_confirmed_reviews(monkeypatch):
 
 
 def test_no_confirmed_review_means_i_dont_know(monkeypatch):
-    _stub_search(monkeypatch, _reviews("A1", 3))
+    _stub_reviews(monkeypatch, _reviews("A1", 30))
     calls = _stub_checks(monkeypatch, set(), "Probably waterproof.")
     out = RI.answer_question(PRODUCT, "防水吗？", "zh")
     assert out["known"] is False
@@ -174,10 +173,37 @@ def test_no_confirmed_review_means_i_dont_know(monkeypatch):
 
 
 def test_chinese_answer_carries_the_chinese_count(monkeypatch):
-    _stub_search(monkeypatch, _reviews("A1", 2))
+    _stub_reviews(monkeypatch, _reviews("A1", 30))
     _stub_checks(monkeypatch, {"A1-01", "A1-02"}, "有人说偏窄。")
     out = RI.answer_question(PRODUCT, "有没有人说偏窄？", "zh")
     assert out["answer"] == "有人说偏窄。（30 条评论里有 2 条提到）"
+
+
+def test_every_review_is_checked_not_a_retrieved_subset(monkeypatch):
+    _stub_reviews(monkeypatch, _reviews("A1", 30))
+    checked = []
+
+    def fake_review_says(review, task):
+        checked.append(review["review_id"])
+        return review["review_id"] == "A1-27"  # a review a top-10 search could miss
+
+    def no_search(*a, **kw):
+        raise AssertionError("Q&A must not go through vector search")
+
+    monkeypatch.setattr(RI, "review_says", fake_review_says)
+    monkeypatch.setattr(RI, "_search", no_search)
+    monkeypatch.setattr(RI, "chat_json", lambda m, schema, **kw: {"answer": "One buyer says so."})
+    out = RI.answer_question(PRODUCT, "Is it waterproof?", "en")
+    assert sorted(checked) == [f"A1-{i:02d}" for i in range(1, 31)]
+    assert out["answer"] == "One buyer says so. 1 of 30 reviews mention this."
+
+
+def test_spoken_total_is_the_number_of_reviews_checked(monkeypatch):
+    _stub_reviews(monkeypatch, _reviews("A1", 12))
+    _stub_checks(monkeypatch, set(), "")
+    out = RI.answer_question(PRODUCT, "Is it waterproof?", "en")
+    assert out["total"] == 12
+    assert out["answer"] == "None of the 12 reviews of this shoe mention this, so I don't know."
 
 
 # ── Cross-product search ─────────────────────────────────────────────────────

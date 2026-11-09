@@ -10,9 +10,9 @@ The three review features of the ShopSense store:
                   spoken count is the number of yes answers. It runs offline
                   (scripts/build_highlights.py); render_highlights() turns
                   the stored result into speech in Chinese or English.
-  2. Review Q&A   answer_question() retrieves this product's reviews that
-                  relate to a question, asks of each one on its own whether
-                  it answers the question, and answers only from those.
+  2. Review Q&A   answer_question() asks of every review of this product,
+                  one at a time, whether it answers the question, and
+                  answers only from the ones that do.
   3. Search       search_products() ranks all products by how well their
                   reviews match a need, then explains each pick.
 
@@ -29,7 +29,10 @@ from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from functools import lru_cache
 
+from qdrant_client.models import FieldCondition, Filter, MatchValue
+
 from agent.tools.review_search import SemanticReviewSearchTool
+from config.settings import QDRANT_COLLECTIONS, get_qdrant_client
 from core.llm import chat_json, object_schema
 
 LANGS = ("zh", "en")
@@ -67,7 +70,6 @@ TAG_BATCH = 10         # reviews per proposal call
 N_POINTS = 3           # key points spoken per product
 N_CANDIDATE_ASPECTS = N_POINTS + 1  # aspects whose stances are verified review by review
 MIN_POINT_REVIEWS = 2  # a stance needs at least this many reviews to be spoken
-QA_TOP_K = 10          # reviews retrieved per question
 SEARCH_TOP_PRODUCTS = 5
 SEARCH_REVIEWS_PER_PRODUCT = 3
 SEARCH_MIN_RATING = 4  # recommendations are argued from satisfied buyers
@@ -293,12 +295,34 @@ def _search(query: str, **kwargs) -> dict:
 
 # ── 2. Review Q&A ────────────────────────────────────────────────────────────
 
+def product_reviews(product: dict) -> list:
+    """Every stored review of one product, in a stable order."""
+    points, _ = get_qdrant_client().scroll(
+        collection_name=QDRANT_COLLECTIONS["reviews"],
+        scroll_filter=Filter(must=[FieldCondition(key="asin", match=MatchValue(value=product["asin"]))]),
+        limit=product["n_reviews"],
+        with_payload=True,
+        with_vectors=False,
+    )
+    return sorted((p.payload for p in points), key=lambda r: r["review_id"])
+
+
 def answer_question(product: dict, question: str, lang: str) -> dict:
-    """Answer from this product's reviews only; say so when they are silent."""
-    n = product["n_reviews"]
-    hits = _search(to_english(question), asin=product["asin"], top_k=QA_TOP_K)["reviews"]
+    """
+    Answer from this product's reviews only; say so when they are silent.
+
+    Every review is checked, not a retrieved subset, so the spoken "k of n"
+    is true of all n. An earlier version checked only the 10 reviews closest
+    to the question and still said "of 30": a review that answered the
+    question in other words was never asked and silently counted as a no.
+    The demo keeps 30 reviews per product, so reading all of them is one
+    parallel round of small calls. A product with thousands of reviews would
+    need retrieval first, and n would then have to be the number checked.
+    """
+    reviews = product_reviews(product)
+    n = len(reviews)
     evidence = reviews_saying(
-        hits,
+        reviews,
         f"Does this review contain information that directly answers the question "
         f"\"{question}\"? Sharing a word with the question is not enough.",
     )
